@@ -11,8 +11,8 @@ type listaEnlazada[T any] struct {
 	largo   int
 }
 
-func (l *listaEnlazada[T]) Iterar(visitar func(T) bool) {
-	for actual := l.primero; actual != nil; {
+func (lista *listaEnlazada[T]) Iterar(visitar func(T) bool) {
+	for actual := lista.primero; actual != nil; {
 		if !visitar(actual.dato) {
 			break
 		}
@@ -26,10 +26,10 @@ type iteradorLista[T any] struct {
 	anterior *nodoLista[T]
 }
 
-func (l *listaEnlazada[T]) Iterador() IteradorLista[T] {
+func (lista *listaEnlazada[T]) Iterador() *iteradorLista[T] {
 	return &iteradorLista[T]{
-		lista:    l,
-		actual:   l.primero,
+		lista:    lista,
+		actual:   lista.primero,
 		anterior: nil,
 	}
 }
