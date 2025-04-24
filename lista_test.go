@@ -25,13 +25,13 @@ func TestListaVolumen(t *testing.T) {
 	for i := 0; i < _VOLUMEN; i++ {
 		if i%2 == 0 {
 			lista.InsertarPrimero(i)
-			require.Equal(t,i,lista.VerPrimero(),"El primer elemento de la lista deberia ser %i",i)
+			require.Equal(t,i,lista.VerPrimero(),"El primer elemento de la lista deberia ser %d",i)
 		} else {
 			lista.InsertarUltimo(i)
-			require.Equal(t,i,lista.VerUltimo(),"El Ultimo elemento de la lista deberia ser %i",i)
+			require.Equal(t,i,lista.VerUltimo(),"El Ultimo elemento de la lista deberia ser %d",i)
 		}
 	}
-	require.Equal(t, _VOLUMEN, lista.Largo(), "El largo de  mi lista deberia ser %i", _VOLUMEN)
+	require.Equal(t, _VOLUMEN, lista.Largo(), "El largo de  mi lista deberia ser %d", _VOLUMEN)
 
 	for !lista.EstaVacia() {
 		lista.BorrarPrimero()
@@ -68,6 +68,13 @@ func TestInsertar(t *testing.T) {
 func TestCrearIterador(t *testing.T) {
 	/*Al insertar un elemento en la posición en la que se crea el iterador,
 	efectivamente se inserta al principio.*/
+	lista:= TDALista.CrearListaEnlazada[int]()
+	iterador := lista.Iterador()
+
+	iterador.Insertar(3)
+
+	require.Equal(t,3,lista.VerPrimero(),"El primer elemento de mi lista deberia ser 3")
+	require.Equal(t,1,lista.Largo(),"El largo de mi lista deberia ser 1")
 }
 
 func TestIteradorAlFinal(t *testing.T) {
@@ -115,4 +122,19 @@ func TestIterarListaVacia(t *testing.T) {
 
 func TestIteradorInterno(t *testing.T) {
 	//probar que se pueda reccorer la lisa con VerActual() y ver siguiente
+	lista := TDALista.CrearListaEnlazada[int]()
+	iterador := lista.Iterador()
+	
+	for i := 0; i < 100; i++ {
+		lista.InsertarUltimo(i)
+	}
+	require.Equal(t,100, lista.Largo(), "El largo de  mi lista deberia ser 100")
+	
+
+	for i:=0; iterador.HaySiguiente(); i++ {
+		require.Equal(t,i,iterador.VerActual(),"El valor actual del iterador deberia ser %d",i)
+		iterador.Siguiente()
+	}
+
 }
+
