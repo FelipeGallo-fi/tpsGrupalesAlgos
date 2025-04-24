@@ -2,24 +2,44 @@ package lista_test
 
 import (
 	"testing"
+
+	"github.com/stretchr/testify/require"
+
+	TDALista "tdas/lista"
 )
 
 const _VOLUMEN = 1000000
 
 func TestListaVacia(t *testing.T){
-	/*que la lista vacia se comporte como una lista vacia
-	ej:
-		panic al verprimero , borrar ,etc
+	lista := TDALista.CrearListaEnlazada[int]()
 
-	*/
+	require.True(t, lista.EstaVacia())
+
+	require.Panics(t, func() { lista.BorrarPrimero() }, "BorrarPrimero en un lista recien  deberia panickear")
+	require.Panics(t, func() { lista.VerPrimero() }, "VerPimero en una lista recien creada deberia panickear")
 }
 
 func TestListaVolumen(t *testing.T){
-	/*para provar de cargar muchos datos
-	ej:
-		probar que al ir insertando datos del 1 al 1000
-		el l.primero.dato se vaya actualizando
-		*/
+	lista := TDALista.CrearListaEnlazada[int]()
+	
+	for i:=0;i<_VOLUMEN;i++{
+		if i%2 == 0 {
+			lista.InsertarPrimero(i)
+		require.Equal(t,i,lista.VerPrimero(),"El primer elemento deberia cambiar")
+		} else {
+			lista.InsertarUltimo(i)
+			require.Equal(t,i,lista.VerPrimero(),"El Ultimo elemento deberia cambiar")
+		}
+	}
+	require.Equal(t,_VOLUMEN,lista.Largo(),"El largo de  mi lista deberia ser %i",_VOLUMEN)
+
+	for !lista.EstaVacia() {
+		lista.BorrarPrimero()
+	}
+
+	require.True(t, lista.EstaVacia(),"La lista deberia esta vacia despues de borrarla por completo")
+	require.Panics(t, func() {lista.BorrarPrimero()},"Borrar en una lista vacia deberia panickear")
+
 }
 
 
