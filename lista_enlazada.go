@@ -11,7 +11,7 @@ type ListaEnlazada[T any] struct {
 	largo   int
 }
 
-func (lista *listaEnlazada[T]) Iterar(visitar func(T) bool) {
+func (lista *ListaEnlazada[T]) Iterar(visitar func(T) bool) {
 	for actual := lista.primero; actual != nil; {
 		if !visitar(actual.dato) {
 			break
@@ -20,32 +20,32 @@ func (lista *listaEnlazada[T]) Iterar(visitar func(T) bool) {
 	}
 }
 
-type iteradorLista[T any] struct {
-	lista    *listaEnlazada[T]
+type IteradorListaImplementacion[T any] struct {
+	lista    *ListaEnlazada[T]
 	actual   *nodoLista[T]
 	anterior *nodoLista[T]
 }
 
-func (lista *listaEnlazada[T]) Iterador() *iteradorLista[T] {
-	return &iteradorLista[T]{
+func (lista *ListaEnlazada[T]) Iterador() IteradorLista[T] {
+	return &IteradorListaImplementacion[T]{
 		lista:    lista,
 		actual:   lista.primero,
 		anterior: nil,
 	}
 }
 
-func (iter *iteradorLista[T]) VerActual() T {
+func (iter *IteradorListaImplementacion[T]) VerActual() T {
 	if iter.actual == nil {
 		panic("El iterador termino de iterar")
 	}
 	return iter.actual.dato
 }
 
-func (iter *iteradorLista[T]) HaySiguiente() bool {
+func (iter *IteradorListaImplementacion[T]) HaySiguiente() bool {
 	return iter.actual != nil
 }
 
-func (iter *iteradorLista[T]) Siguiente() {
+func (iter *IteradorListaImplementacion[T]) Siguiente() {
 	if iter.actual == nil {
 		panic("El iterador termino de iterar")
 	}
@@ -53,7 +53,7 @@ func (iter *iteradorLista[T]) Siguiente() {
 	iter.actual = iter.actual.siguiente
 }
 
-func (iter *iteradorLista[T]) Insertar(dato T) {
+func (iter *IteradorListaImplementacion[T]) Insertar(dato T) {
 	if iter.anterior == nil {
 		iter.lista.InsertarPrimero(dato)
 		iter.actual = iter.lista.primero
@@ -68,7 +68,7 @@ func (iter *iteradorLista[T]) Insertar(dato T) {
 	}
 }
 
-func (iter *iteradorLista[T]) Borrar() T {
+func (iter *IteradorListaImplementacion[T]) Borrar() T {
 	if !iter.HaySiguiente() {
 		panic("El iterador termino de iterar")
 	}
@@ -94,7 +94,6 @@ func CrearListaEnlazada[T any]() Lista[T] {
 	return &ListaEnlazada[T]{}
 }
 
-
 func (l *ListaEnlazada[T]) EstaVacia() bool {
 	return l.largo == 0
 }
@@ -109,7 +108,7 @@ func (l *ListaEnlazada[T]) InsertarPrimero(dato T) {
 	l.primero = nuevo
 	if l.ultimo == nil {
 		l.ultimo = nuevo
-	} 
+	}
 	l.largo++
 }
 
