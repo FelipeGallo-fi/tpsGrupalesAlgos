@@ -54,20 +54,6 @@ func (iter *IteradorListaImplementacion[T]) Siguiente() {
 }
 
 func (iter *IteradorListaImplementacion[T]) Insertar(dato T) {
-<<<<<<< HEAD
-	if iter.anterior == nil {
-		iter.lista.InsertarPrimero(dato)
-		iter.actual = iter.lista.primero
-	} else if iter.actual == nil {
-		iter.lista.InsertarUltimo(dato)
-		iter.actual = iter.lista.ultimo
-	} else {
-		nuevo := &nodoLista[T]{dato, iter.actual}
-		iter.anterior.siguiente = nuevo
-		iter.actual = nuevo
-		iter.lista.largo++
-	}
-=======
 	nuevo := &nodoLista[T]{dato, iter.actual}
 
 	if iter.anterior == nil {
@@ -84,7 +70,6 @@ func (iter *IteradorListaImplementacion[T]) Insertar(dato T) {
 
 	iter.actual = nuevo
 	iter.lista.largo++
->>>>>>> origin/main
 }
 
 func (iter *IteradorListaImplementacion[T]) Borrar() T {
@@ -92,23 +77,6 @@ func (iter *IteradorListaImplementacion[T]) Borrar() T {
 		panic("El iterador termino de iterar")
 	}
 
-<<<<<<< HEAD
-	var dato T
-
-	if iter.anterior == nil {
-		dato = iter.lista.BorrarPrimero()
-		iter.actual = iter.lista.primero
-	} else {
-		dato = iter.actual.dato
-		iter.anterior.siguiente = iter.actual.siguiente
-		if iter.actual == iter.lista.ultimo {
-			iter.lista.ultimo = iter.anterior
-		}
-		iter.actual = iter.actual.siguiente
-		iter.lista.largo--
-	}
-
-=======
 	dato := iter.actual.dato
 
 	if iter.anterior == nil {
@@ -126,7 +94,6 @@ func (iter *IteradorListaImplementacion[T]) Borrar() T {
 	}
 
 	iter.lista.largo--
->>>>>>> origin/main
 	return dato
 }
 func CrearListaEnlazada[T any]() Lista[T] {

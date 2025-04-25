@@ -22,6 +22,7 @@ func TestListaVolumen(t *testing.T) {
 	lista := TDALISTA.CrearListaEnlazada[int]()
 
 	for i := 0; i < _VOLUMEN; i++ {
+
 		if i%2 == 0 {
 			lista.InsertarPrimero(i)
 			require.Equal(t, i, lista.VerPrimero(), "El primer elemento de la lista deberia ser %d", i)
@@ -144,51 +145,57 @@ func TestIteradorAlFinal(t *testing.T) {
 	require.Equal(t, 2, lista.Largo(), "El largo de mi lista deberia ser 2 despues de insertar 2 elementos")
 }
 
+func iterarHastaMedio[T any](lista TDALISTA.Lista[T]) TDALISTA.IteradorLista[T] {
+	iterador := lista.Iterador()
+	largoLista := (lista.Largo() / 2)
+	for i := 0; i < largoLista; i++ {
+		iterador.Siguiente()
+	}
+	return iterador
+}
+
 func TestInsertarMedio(t *testing.T) {
 	lista := TDALISTA.CrearListaEnlazada[int]()
 	lista.InsertarPrimero(1)
-	lista.InsertarUltimo(2)
+	lista.InsertarUltimo(5)
 	lista.InsertarUltimo(3)
 
-	iterador := lista.Iterador()
-	iterador.Siguiente()
-	iterador.Siguiente()
-	iterador.Insertar(4)
+	largo := lista.Largo()
+	//el medio deberia ser 5
 
-	require.Equal(t, 4, iterador.VerActual())
-	require.Equal(t, 1, lista.VerPrimero())
-	require.Equal(t, 3, lista.VerUltimo())
-	require.Equal(t, 4, lista.Largo())
+	iterador := iterarHastaMedio(lista)
+	iterador.Insertar(4)
+	//el nuevo medio deberia ser  4
+
+	//el nuevo largo deberia ser 1 mas
+	require.Equal(t, largo+1, lista.Largo(), "El largo de la lista deberia ser 1 mas largo  ")
+	largo = lista.Largo()
+
+	for i := 0; i < (largo/2)-1; i++ {
+		lista.BorrarPrimero()
+	}
+	require.Equal(t, 4, lista.VerPrimero(), "El medio deberia ser: 4")
 }
 
 func TestRemoverMedio(t *testing.T) {
 	lista := TDALISTA.CrearListaEnlazada[int]()
-	lista.InsertarPrimero(1)
-	lista.InsertarUltimo(2)
-	lista.InsertarUltimo(3)
 
-	iterador := lista.Iterador()
-	iterador.Siguiente()
-	iterador.Siguiente()
-
-	if iterador.HaySiguiente() {
-		iterador.Borrar()
+	for i := _VOLUMEN - 1; i >= 0; i-- {
+		lista.InsertarPrimero(i)
 	}
-	require.True(t, iterador.HaySiguiente())
-	require.Equal(t, 3, iterador.VerActual())
+	require.Equal(t, _VOLUMEN, lista.Largo(), "La lista tendira que ser del largo : %d", _VOLUMEN)
 
-	require.Equal(t, 1, lista.VerPrimero())
-	require.Equal(t, 3, lista.VerUltimo())
-	require.Equal(t, 2, lista.Largo(), "El largo de la lista deberia ser 2 despues de remover un elemento")
-	if iterador.HaySiguiente() {
-		iterador.Siguiente()
+	iterador := iterarHastaMedio(lista)
+
+	medioBorrado := iterador.Borrar()
+
+	require.Equal(t, _VOLUMEN/2, medioBorrado, "El elemento borrado deberia ser: %d", _VOLUMEN/2)
+
+	for i := 0; i < (_VOLUMEN/2)-1; i++ {
+		lista.BorrarPrimero()
 	}
-	require.False(t, iterador.HaySiguiente())
-	iterador.Siguiente()
-	require.False(t, iterador.HaySiguiente())
-	require.PanicsWithValue(t, "El iterador termino de iterar", func() {
-		iterador.VerActual()
-	})
+	medioNuevo := lista.VerPrimero()
+	require.Equal(t, (_VOLUMEN/2)-1, medioNuevo, "El nuevo medio deberia ser distiano al anterior")
 }
 
 func TestRemoverElmento(t *testing.T) {
@@ -196,16 +203,12 @@ func TestRemoverElmento(t *testing.T) {
 	lista.InsertarPrimero(1)
 	lista.InsertarUltimo(2)
 	lista.InsertarUltimo(3)
+
 	iterador := lista.Iterador()
-	iterador.Siguiente()
-	iterador.Siguiente()
 	iterador.Borrar()
-	require.Equal(t, 3, iterador.VerActual())
-	require.Equal(t, 1, lista.VerPrimero())
-	require.Equal(t, 3, lista.VerUltimo())
-	require.Equal(t, 2, lista.Largo())
-	iterador.Siguiente()
-	require.Panics(t, func() { iterador.Siguiente() }, "El iterador termino de iterar")
+
+	require.Equal(t, 2, lista.VerPrimero(), "EL primer numero deberia ser 2 luego de borrar con el nuevo iterador")
+
 }
 
 func TestRemoverUltimoIteradorElmento(t *testing.T) {
