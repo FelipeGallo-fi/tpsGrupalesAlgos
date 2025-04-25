@@ -54,6 +54,7 @@ func (iter *IteradorListaImplementacion[T]) Siguiente() {
 }
 
 func (iter *IteradorListaImplementacion[T]) Insertar(dato T) {
+<<<<<<< HEAD
 	if iter.anterior == nil {
 		iter.lista.InsertarPrimero(dato)
 		iter.actual = iter.lista.primero
@@ -66,6 +67,24 @@ func (iter *IteradorListaImplementacion[T]) Insertar(dato T) {
 		iter.actual = nuevo
 		iter.lista.largo++
 	}
+=======
+	nuevo := &nodoLista[T]{dato, iter.actual}
+
+	if iter.anterior == nil {
+		iter.lista.primero = nuevo
+		if iter.lista.ultimo == nil {
+			iter.lista.ultimo = nuevo
+		}
+	} else {
+		iter.anterior.siguiente = nuevo
+	}
+	if iter.actual == nil {
+		iter.lista.ultimo = nuevo
+	}
+
+	iter.actual = nuevo
+	iter.lista.largo++
+>>>>>>> origin/main
 }
 
 func (iter *IteradorListaImplementacion[T]) Borrar() T {
@@ -73,6 +92,7 @@ func (iter *IteradorListaImplementacion[T]) Borrar() T {
 		panic("El iterador termino de iterar")
 	}
 
+<<<<<<< HEAD
 	var dato T
 
 	if iter.anterior == nil {
@@ -88,6 +108,25 @@ func (iter *IteradorListaImplementacion[T]) Borrar() T {
 		iter.lista.largo--
 	}
 
+=======
+	dato := iter.actual.dato
+
+	if iter.anterior == nil {
+		iter.lista.primero = iter.actual.siguiente
+		iter.actual = iter.lista.primero
+		if iter.actual == nil {
+			iter.lista.ultimo = nil
+		}
+	} else {
+		iter.anterior.siguiente = iter.actual.siguiente
+		iter.actual = iter.actual.siguiente
+		if iter.actual == nil {
+			iter.lista.ultimo = iter.anterior
+		}
+	}
+
+	iter.lista.largo--
+>>>>>>> origin/main
 	return dato
 }
 func CrearListaEnlazada[T any]() Lista[T] {
@@ -124,13 +163,10 @@ func (l *ListaEnlazada[T]) InsertarUltimo(dato T) {
 
 }
 
-func (l *ListaEnlazada[T]) panicVacia() {
+func (l *ListaEnlazada[T]) BorrarPrimero() T {
 	if l.EstaVacia() {
 		panic("La lista esta vacia =(")
 	}
-}
-func (l *ListaEnlazada[T]) BorrarPrimero() T {
-	l.panicVacia()
 	dato := l.primero.dato
 	if l.largo > 1 {
 		l.primero = l.primero.siguiente
@@ -143,11 +179,15 @@ func (l *ListaEnlazada[T]) BorrarPrimero() T {
 }
 
 func (l *ListaEnlazada[T]) VerPrimero() T {
-	l.panicVacia()
+	if l.EstaVacia() {
+		panic("La lista esta vacia =(")
+	}
 	return l.primero.dato
 }
 func (l *ListaEnlazada[T]) VerUltimo() T {
-	l.panicVacia()
+	if l.EstaVacia() {
+		panic("La lista esta vacia =(")
+	}
 	return l.ultimo.dato
 }
 
