@@ -12,12 +12,12 @@ const (
 )
 
 type DiccionarioHash[K comparable, V any] struct {
-    tabla []entrada[K,V]
+    tabla []hashElem[K,V]
     cantidad int      
     capacidad int   
 }
 
-type entrada[K comparable, V any] struct{
+type hashElem[K comparable, V any] struct{
 	clave K
 	valor V
 	estado estadoCelda
