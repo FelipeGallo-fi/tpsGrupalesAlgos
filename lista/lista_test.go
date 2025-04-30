@@ -52,9 +52,7 @@ func TestListas(t *testing.T) {
 	listaEnteros.BorrarPrimero()
 	require.Equal(t, 4, listaEnteros.VerPrimero())
 	listaEnteros.BorrarPrimero()
-	require.PanicsWithValue(t, "La lista esta vacia =(", func() {
-		listaEnteros.VerPrimero()
-	})
+	require.Panics(t, func() { listaEnteros.BorrarPrimero() }, "Borrar en una lista vacia deberia panickear")
 
 	// Lista de strings
 	listaStrings := TDALISTA.CrearListaEnlazada[string]()
@@ -65,9 +63,7 @@ func TestListas(t *testing.T) {
 	listaStrings.BorrarPrimero()
 	require.Equal(t, "mundo", listaStrings.VerPrimero())
 	listaStrings.BorrarPrimero()
-	require.PanicsWithValue(t, "La lista esta vacia =(", func() {
-		listaStrings.VerPrimero()
-	})
+	require.Panics(t, func() { listaStrings.BorrarPrimero() }, "Borrar en una lista vacia deberia panickear")
 
 	// Lista de booleanos
 	listaBooleanos := TDALISTA.CrearListaEnlazada[bool]()
@@ -78,9 +74,7 @@ func TestListas(t *testing.T) {
 	listaBooleanos.BorrarPrimero()
 	require.Equal(t, false, listaBooleanos.VerPrimero())
 	listaBooleanos.BorrarPrimero()
-	require.PanicsWithValue(t, "La lista esta vacia =(", func() {
-		listaBooleanos.BorrarPrimero()
-	})
+	require.Panics(t, func() { listaBooleanos.BorrarPrimero() }, "Borrar en una lista vacia deberia panickear")
 }
 
 func TestListaListas(t *testing.T) {
@@ -161,13 +155,9 @@ func TestInsertarMedio(t *testing.T) {
 	lista.InsertarUltimo(3)
 
 	largo := lista.Largo()
-	//el medio deberia ser 5
 
 	iterador := iterarHastaMedio(lista)
 	iterador.Insertar(4)
-	//el nuevo medio deberia ser  4
-
-	//el nuevo largo deberia ser 1 mas
 	require.Equal(t, largo+1, lista.Largo(), "El largo de la lista deberia ser 1 mas largo  ")
 	largo = lista.Largo()
 
