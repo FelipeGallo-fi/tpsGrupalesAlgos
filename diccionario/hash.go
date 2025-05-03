@@ -1,11 +1,8 @@
 package diccionario
 
 import (
-	"bytes"
-	"encoding/binary"
 	"fmt"
-
-	"github.com/spaolacci/murmur3"
+	"hash/fnv"
 )
 
 type estadoCelda int
@@ -52,7 +49,7 @@ func (d *DiccionarioHash[K, V]) Guardar(clave K, valor V) {
 		d.redimensionar(d.capacidad * 2)
 	}
 
-	posicion := hashIndice(clave, d.capacidad)
+	posicion := hash(clave, d.capacidad)
 
 	for {
 		elem := &d.tabla[posicion]
@@ -77,7 +74,7 @@ func (d *DiccionarioHash[K, V]) Pertenece(clave K) bool {
 	if d.capacidad == 0 {
 		return false
 	}
-	start := hashIndice(clave, d.capacidad)
+	start := hash(clave, d.capacidad)
 	pos := start
 
 	for {
@@ -99,7 +96,7 @@ func (d *DiccionarioHash[K, V]) Obtener(clave K) V {
 	if d.capacidad == 0 {
 		panic("La clave no pertenece al diccionario")
 	}
-	posicion := hashIndice(clave, d.capacidad)
+	posicion := hash(clave, d.capacidad)
 	for {
 		elem := d.tabla[posicion]
 		if elem.estado == VACIA {
@@ -117,7 +114,7 @@ func (d *DiccionarioHash[K, V]) Borrar(clave K) V {
 		panic("La clave no pertenece al diccionario")
 	}
 
-	start := hashIndice(clave, d.capacidad)
+	start := hash(clave, d.capacidad)
 	pos := start
 
 	for {
@@ -201,13 +198,19 @@ func (i *IterDiccionarioImplementacion[K, V]) Siguiente() {
 
 }
 
-func hashClave[K comparable](clave K) uint32 {
-	var buff bytes.Buffer
-	error := binary.Write(&buff, binary.LittleEndian, clave)
-	if error != nil {
-		return murmur3.Sum32([]byte(fmt.Sprintf("%v", clave)))
+func hash[K comparable](clave K, capacidad int) int {
+	h := fnv.New32a()
+	switch v := any(clave).(type) {
+	case string:
+		h.Write([]byte(v))
+	case []byte:
+		h.Write(v)
+	case int:
+		h.Write([]byte(fmt.Sprintf("%d", v)))
+	default:
+		h.Write([]byte(fmt.Sprint(v)))
 	}
-	return murmur3.Sum32(buff.Bytes())
+	return int(h.Sum32() % uint32(capacidad))
 }
 
 func (d *DiccionarioHash[K, V]) redimensionar(nuevaCapacidad int) {
@@ -222,8 +225,4 @@ func (d *DiccionarioHash[K, V]) redimensionar(nuevaCapacidad int) {
 			d.Guardar(elem.clave, elem.valor)
 		}
 	}
-}
-
-func hashIndice[K comparable](clave K, capacidad int) int {
-	return int(hashClave(clave) % uint32(capacidad))
 }
