@@ -18,7 +18,7 @@ const (
 	BORRADA
 )
 
-type DiccionarioHash[K comparable, V any] struct {
+type diccionarioHash[K comparable, V any] struct {
 	tabla     []hashElem[K, V]
 	cantidad  int
 	capacidad int
@@ -30,16 +30,16 @@ type hashElem[K comparable, V any] struct {
 	estado estadoCelda
 }
 
-type IterDiccionarioImplementacion[K comparable, V any] struct {
-	diccionario *DiccionarioHash[K, V]
+type iterDiccionarioImplementacion[K comparable, V any] struct {
+	diccionario *diccionarioHash[K, V]
 	posicion    int
 }
 
-func CrearHash[K comparable, V any]() Diccionario[K, V] {
-	return &DiccionarioHash[K, V]{}
+func CrearHash[K comparable, V any]() *diccionarioHash[K, V] {
+	return &diccionarioHash[K, V]{}
 }
 
-func (d *DiccionarioHash[K, V]) Guardar(clave K, valor V) {
+func (d *diccionarioHash[K, V]) Guardar(clave K, valor V) {
 	if d.capacidad == 0 {
 		d.capacidad = capacidadMinima
 		d.tabla = make([]hashElem[K, V], d.capacidad)
@@ -70,7 +70,7 @@ func (d *DiccionarioHash[K, V]) Guardar(clave K, valor V) {
 	d.cantidad++
 }
 
-func (d *DiccionarioHash[K, V]) Pertenece(clave K) bool {
+func (d *diccionarioHash[K, V]) Pertenece(clave K) bool {
 	if d.capacidad == 0 {
 		return false
 	}
@@ -92,7 +92,7 @@ func (d *DiccionarioHash[K, V]) Pertenece(clave K) bool {
 	}
 }
 
-func (d *DiccionarioHash[K, V]) Obtener(clave K) V {
+func (d *diccionarioHash[K, V]) Obtener(clave K) V {
 	if d.capacidad == 0 {
 		panic("La clave no pertenece al diccionario")
 	}
@@ -109,7 +109,7 @@ func (d *DiccionarioHash[K, V]) Obtener(clave K) V {
 	}
 }
 
-func (d *DiccionarioHash[K, V]) Borrar(clave K) V {
+func (d *diccionarioHash[K, V]) Borrar(clave K) V {
 	if d.capacidad == 0 {
 		panic("La clave no pertenece al diccionario")
 	}
@@ -139,13 +139,13 @@ func (d *DiccionarioHash[K, V]) Borrar(clave K) V {
 	}
 }
 
-func (d *DiccionarioHash[K, V]) Cantidad() int {
+func (d *diccionarioHash[K, V]) Cantidad() int {
 	return d.cantidad
 }
 
 ///funcion Iterador Interno
 
-func (d *DiccionarioHash[K, V]) Iterar(f func(clave K, dato V) bool) {
+func (d *diccionarioHash[K, V]) Iterar(f func(clave K, dato V) bool) {
 	for _, elemento := range d.tabla {
 		if elemento.estado == OCUPADA {
 			if !f(elemento.clave, elemento.valor) {
@@ -158,13 +158,13 @@ func (d *DiccionarioHash[K, V]) Iterar(f func(clave K, dato V) bool) {
 
 ///funcion Iterador externo
 
-func (d *DiccionarioHash[K, V]) Iterador() IterDiccionario[K, V] {
+func (d *diccionarioHash[K, V]) Iterador() IterDiccionario[K, V] {
 	posicionOpcupada := 0
 	for (posicionOpcupada < len(d.tabla)) && (d.tabla[posicionOpcupada].estado != OCUPADA) {
 		posicionOpcupada++
 	}
 
-	return &IterDiccionarioImplementacion[K, V]{
+	return &iterDiccionarioImplementacion[K, V]{
 		diccionario: d,
 		posicion:    posicionOpcupada,
 	}
@@ -172,13 +172,13 @@ func (d *DiccionarioHash[K, V]) Iterador() IterDiccionario[K, V] {
 
 ///funciones Iterador
 
-func (i *IterDiccionarioImplementacion[K, V]) panicVacia() {
+func (i *iterDiccionarioImplementacion[K, V]) panicVacia() {
 	if !i.HaySiguiente() {
 		panic("El iterador termino de iterar")
 	}
 }
 
-func (i *IterDiccionarioImplementacion[K, V]) HaySiguiente() bool {
+func (i *iterDiccionarioImplementacion[K, V]) HaySiguiente() bool {
 
 	for i.posicion < len(i.diccionario.tabla) && i.diccionario.tabla[i.posicion].estado != OCUPADA {
 		i.posicion++
@@ -187,12 +187,12 @@ func (i *IterDiccionarioImplementacion[K, V]) HaySiguiente() bool {
 
 }
 
-func (i *IterDiccionarioImplementacion[K, V]) VerActual() (K, V) {
+func (i *iterDiccionarioImplementacion[K, V]) VerActual() (K, V) {
 	i.panicVacia()
 	return i.diccionario.tabla[i.posicion].clave, i.diccionario.tabla[i.posicion].valor
 }
 
-func (i *IterDiccionarioImplementacion[K, V]) Siguiente() {
+func (i *iterDiccionarioImplementacion[K, V]) Siguiente() {
 	i.panicVacia()
 	i.posicion++
 
@@ -213,7 +213,7 @@ func hash[K comparable](clave K, capacidad int) int {
 	return int(h.Sum32() % uint32(capacidad))
 }
 
-func (d *DiccionarioHash[K, V]) redimensionar(nuevaCapacidad int) {
+func (d *diccionarioHash[K, V]) redimensionar(nuevaCapacidad int) {
 	viejaTabla := d.tabla
 
 	d.tabla = make([]hashElem[K, V], nuevaCapacidad)
