@@ -3,11 +3,17 @@ package diccionario
 import (
 	"bytes"
 	"encoding/binary"
-	"reflect"
+	"fmt"
+
+	"github.com/spaolacci/murmur3"
 )
 
+type estadoCelda int
 
-type estadoCelda int 
+const (
+	cargaMax        = 0.7
+	capacidadMinima = 20
+)
 
 const (
 	VACIA estadoCelda = iota
@@ -16,173 +22,194 @@ const (
 )
 
 type DiccionarioHash[K comparable, V any] struct {
-    tabla []hashElem[K,V]
-    cantidad int      
-    capacidad int   
+	tabla     []hashElem[K, V]
+	cantidad  int
+	capacidad int
 }
 
-type hashElem[K comparable, V any] struct{
-	clave K
-	valor V
+type hashElem[K comparable, V any] struct {
+	clave  K
+	valor  V
 	estado estadoCelda
 }
 
-type IterDiccionarioImplementacion[K comparable, V any] struct{
+type IterDiccionarioImplementacion[K comparable, V any] struct {
 	diccionario *DiccionarioHash[K, V]
-	posicion 	int 
+	posicion    int
 }
 
-func CrearHash[K comparable, V any]() Diccionario[K, V]{
-	return &DiccionarioHash[K,V]{}
+func CrearHash[K comparable, V any]() Diccionario[K, V] {
+	return &DiccionarioHash[K, V]{}
 }
 
-func (d *DiccionarioHash[K, V]) Guardar(K, V){
+func (d *DiccionarioHash[K, V]) Guardar(clave K, valor V) {
+	if d.capacidad == 0 {
+		d.capacidad = capacidadMinima
+		d.tabla = make([]hashElem[K, V], d.capacidad)
+	}
 
+	if float64(d.cantidad+1)/float64(d.capacidad) > cargaMax {
+		d.redimensionar(d.capacidad * 2)
+	}
+
+	posicion := hashIndice(clave, d.capacidad)
+
+	for {
+		elem := &d.tabla[posicion]
+
+		if elem.estado == VACIA || elem.estado == BORRADA {
+			break
+		}
+
+		if elem.estado == OCUPADA && elem.clave == clave {
+			elem.valor = valor
+			return
+		}
+
+		posicion = (posicion + 1) % d.capacidad
+	}
+
+	d.tabla[posicion] = hashElem[K, V]{clave: clave, valor: valor, estado: OCUPADA}
+	d.cantidad++
 }
 
-func (d *DiccionarioHash[K, V]) Pertenece(clave K) bool{
+func (d *DiccionarioHash[K, V]) Pertenece(clave K) bool {
+	if d.capacidad == 0 {
+		return false
+	}
+	posicion := hashIndice(clave, d.capacidad)
 
+	for {
+		elem := d.tabla[posicion]
+		if elem.estado == VACIA {
+			return false
+		}
+		if elem.estado == OCUPADA && elem.clave == clave {
+			return true
+		}
+		posicion = (posicion + 1) % d.capacidad
+	}
 }
 
-func (d *DiccionarioHash[K, V]) Obtener(clave K) V{
-
+func (d *DiccionarioHash[K, V]) Obtener(clave K) V {
+	if d.capacidad == 0 {
+		panic("La clave no pertenece al diccionario")
+	}
+	posicion := hashIndice(clave, d.capacidad)
+	for {
+		elem := d.tabla[posicion]
+		if elem.estado == VACIA {
+			panic("La clave no pertenece al diccionario")
+		}
+		if elem.estado == OCUPADA && elem.clave == clave {
+			return elem.valor
+		}
+		posicion = (posicion + 1) % d.capacidad
+	}
 }
 
-
-func (d *DiccionarioHash[K, V]) Borrar(clave K) V{
-
+func (d *DiccionarioHash[K, V]) Borrar(clave K) V {
+	if d.capacidad == 0 {
+		panic("La clave no pertenece al diccionario")
+	}
+	posicion := hashIndice(clave, d.capacidad)
+	for {
+		elem := &d.tabla[posicion]
+		if elem.estado == VACIA {
+			panic("La clave no pertenece al diccionario")
+		}
+		if elem.estado == OCUPADA && elem.clave == clave {
+			valor := elem.valor
+			elem.estado = BORRADA
+			d.cantidad--
+			return valor
+		}
+		posicion = (posicion + 1) % d.capacidad
+	}
 }
 
-func (d *DiccionarioHash[K, V]) Cantidad() int{
-
+func (d *DiccionarioHash[K, V]) Cantidad() int {
+	return d.cantidad
 }
 
 ///funcion Iterador Interno
 
 func (d *DiccionarioHash[K, V]) Iterar(f func(clave K, dato V) bool) {
-	for _,elemento := range d.tabla{
-		if elemento.estado == OCUPADA{
-			if !f(elemento.clave ,elemento.valor){
+	for _, elemento := range d.tabla {
+		if elemento.estado == OCUPADA {
+			if !f(elemento.clave, elemento.valor) {
 				return
 			}
 		}
 	}
-	
+
 }
 
 ///funcion Iterador externo
 
 func (d *DiccionarioHash[K, V]) Iterador() IterDiccionario[K, V] {
-	posicionOpcupada :=0 
-	for (posicionOpcupada < len(d.tabla)) && (d.tabla[posicionOpcupada].estado != OCUPADA){
-		posicionOpcupada ++
+	posicionOpcupada := 0
+	for (posicionOpcupada < len(d.tabla)) && (d.tabla[posicionOpcupada].estado != OCUPADA) {
+		posicionOpcupada++
 	}
-	
-	return &IterDiccionarioImplementacion[K , V]{
+
+	return &IterDiccionarioImplementacion[K, V]{
 		diccionario: d,
-		posicion: posicionOpcupada,
-	} 
+		posicion:    posicionOpcupada,
+	}
 }
-
-
 
 ///funciones Iterador
 
-func (i *IterDiccionarioImplementacion[K, V]) PanicVacia()  {
-	if !i.HaySiguiente(){
+func (i *IterDiccionarioImplementacion[K, V]) panicVacia() {
+	if !i.HaySiguiente() {
 		panic("El iterador termino de iterar")
 	}
 }
 
-
 func (i *IterDiccionarioImplementacion[K, V]) HaySiguiente() bool {
 
 	for i.posicion < len(i.diccionario.tabla) && i.diccionario.tabla[i.posicion].estado != OCUPADA {
-		i.posicion++  
+		i.posicion++
 	}
-	return i.posicion < len(i.diccionario.tabla) && i.diccionario.tabla[i.posicion].estado  == OCUPADA
-	
+	return i.posicion < len(i.diccionario.tabla) && i.diccionario.tabla[i.posicion].estado == OCUPADA
+
 }
 
 func (i *IterDiccionarioImplementacion[K, V]) VerActual() (K, V) {
-	i.PanicVacia()
-	return i.diccionario.tabla[i.posicion].clave ,i.diccionario.tabla[i.posicion].valor
+	i.panicVacia()
+	return i.diccionario.tabla[i.posicion].clave, i.diccionario.tabla[i.posicion].valor
 }
 
-
 func (i *IterDiccionarioImplementacion[K, V]) Siguiente() {
-	i.PanicVacia()
+	i.panicVacia()
 	i.posicion++
 
 }
 
-
-//Funcion de hasing sacada de ChatGPT
-
-func Hash(data interface{}) uint64 {
-	const (
-		prime64   = 1099511628211
-		offset64  = 14695981039346656037
-		mixPrime1 = 0x100000001b3
-		mixPrime2 = 0xC6A4A7935BD1E995
-	)
-
-	buf := new(bytes.Buffer)
-	writeToBuffer(buf, data)
-
-	var hash uint64 = offset64
-	for _, b := range buf.Bytes() {
-		hash ^= uint64(b)
-		hash *= prime64
+func hashClave[K comparable](clave K) uint32 {
+	var buff bytes.Buffer
+	error := binary.Write(&buff, binary.LittleEndian, clave)
+	if error != nil {
+		return murmur3.Sum32([]byte(fmt.Sprintf("%v", clave)))
 	}
-
-	
-	hash ^= hash >> 33
-	hash *= mixPrime2
-	hash ^= hash >> 29
-	hash *= mixPrime1
-	hash ^= hash >> 32
-
-	return hash
+	return murmur3.Sum32(buff.Bytes())
 }
 
+func (d *DiccionarioHash[K, V]) redimensionar(nuevaCapacidad int) {
+	viejaTabla := d.tabla
 
-func writeToBuffer(buf *bytes.Buffer, val interface{}) {
-	v := reflect.ValueOf(val)
+	d.tabla = make([]hashElem[K, V], nuevaCapacidad)
+	d.capacidad = nuevaCapacidad
+	d.cantidad = 0
 
-	switch v.Kind() {
-	case reflect.String:
-		buf.WriteString(v.String())
-	case reflect.Int, reflect.Int8, reflect.Int16, reflect.Int32, reflect.Int64:
-		binary.Write(buf, binary.LittleEndian, v.Int())
-	case reflect.Uint, reflect.Uint8, reflect.Uint16, reflect.Uint32, reflect.Uint64, reflect.Uintptr:
-		binary.Write(buf, binary.LittleEndian, v.Uint())
-	case reflect.Float32, reflect.Float64:
-		binary.Write(buf, binary.LittleEndian, v.Float())
-	case reflect.Bool:
-		var b byte = 0
-		if v.Bool() {
-			b = 1
+	for _, elem := range viejaTabla {
+		if elem.estado == OCUPADA {
+			d.Guardar(elem.clave, elem.valor)
 		}
-		buf.WriteByte(b)
-	case reflect.Slice, reflect.Array:
-		for i := 0; i < v.Len(); i++ {
-			writeToBuffer(buf, v.Index(i).Interface())
-		}
-	case reflect.Struct:
-		for i := 0; i < v.NumField(); i++ {
-			writeToBuffer(buf, v.Field(i).Interface())
-		}
-	case reflect.Ptr, reflect.Interface:
-		if !v.IsNil() {
-			writeToBuffer(buf, v.Elem().Interface())
-		}
-	default:
-		
 	}
 }
 
-
-
-
-
+func hashIndice[K comparable](clave K, capacidad int) int {
+	return int(hashClave(clave) % uint32(capacidad))
+}
