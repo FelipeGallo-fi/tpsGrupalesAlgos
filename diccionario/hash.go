@@ -35,15 +35,19 @@ type iterDiccionarioImplementacion[K comparable, V any] struct {
 	posicion    int
 }
 
-func CrearHash[K comparable, V any]() *diccionarioHash[K, V] {
+func CrearHash[K comparable, V any]() Diccionario[K, V] {
 	return &diccionarioHash[K, V]{}
 }
 
-func (d *diccionarioHash[K, V]) Guardar(clave K, valor V) {
-	if d.capacidad == 0 {
+func(d *diccionarioHash[K, V]) inicializarTabla(){
+	if d.capacidad == 0{
 		d.capacidad = capacidadMinima
-		d.tabla = make([]hashElem[K, V], d.capacidad)
 	}
+	d.tabla = make([]hashElem[K, V], d.capacidad)
+}
+
+func (d *diccionarioHash[K, V]) Guardar(clave K, valor V) {
+	d.inicializarTabla()
 
 	if float64(d.cantidad+1)/float64(d.capacidad) > cargaMax {
 		d.redimensionar(d.capacidad * 2)
@@ -127,9 +131,7 @@ func (d *diccionarioHash[K, V]) Borrar(clave K) V {
 			elem.estado = BORRADA
 			d.cantidad--
 
-			if d.cantidad == 0 {
-				d.tabla = make([]hashElem[K, V], d.capacidad)
-			}
+			d.inicializarTabla()
 			return valor
 		}
 		pos = (pos + 1) % d.capacidad
