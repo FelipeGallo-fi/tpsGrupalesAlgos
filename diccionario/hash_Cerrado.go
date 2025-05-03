@@ -10,7 +10,10 @@ import (
 
 type estadoCelda int
 
-const cargaMax = 0.7
+const (
+	cargaMax        = 0.7
+	capacidadMinima = 20
+)
 
 const (
 	VACIA estadoCelda = iota
@@ -41,7 +44,7 @@ func CrearHash[K comparable, V any]() Diccionario[K, V] {
 
 func (d *DiccionarioHash[K, V]) Guardar(clave K, valor V) {
 	if d.capacidad == 0 {
-		d.capacidad = 17
+		d.capacidad = capacidadMinima
 		d.tabla = make([]hashElem[K, V], d.capacidad)
 	}
 
@@ -78,31 +81,55 @@ func (d *DiccionarioHash[K, V]) Pertenece(clave K) bool {
 
 	for {
 		elem := d.tabla[posicion]
-		switch elem.estado {
-		case VACIA:
+		if elem.estado == VACIA {
 			return false
-		case OCUPADA:
-			if elem.clave == clave {
-				return true
-			}
-		case BORRADA:
-			continue
 		}
-
+		if elem.estado == OCUPADA && elem.clave == clave {
+			return true
+		}
 		posicion = (posicion + 1) % d.capacidad
 	}
 }
 
 func (d *DiccionarioHash[K, V]) Obtener(clave K) V {
-
+	if d.capacidad == 0 {
+		panic("La clave no pertenece al diccionario")
+	}
+	posicion := hashIndice(clave, d.capacidad)
+	for {
+		elem := d.tabla[posicion]
+		if elem.estado == VACIA {
+			panic("La clave no pertenece al diccionario")
+		}
+		if elem.estado == OCUPADA && elem.clave == clave {
+			return elem.valor
+		}
+		posicion = (posicion + 1) % d.capacidad
+	}
 }
 
 func (d *DiccionarioHash[K, V]) Borrar(clave K) V {
-
+	if d.capacidad == 0 {
+		panic("La clave no pertenece al diccionario")
+	}
+	posicion := hashIndice(clave, d.capacidad)
+	for {
+		elem := &d.tabla[posicion]
+		if elem.estado == VACIA {
+			panic("La clave no pertenece al diccionario")
+		}
+		if elem.estado == OCUPADA && elem.clave == clave {
+			valor := elem.valor
+			elem.estado = BORRADA
+			d.cantidad--
+			return valor
+		}
+		posicion = (posicion + 1) % d.capacidad
+	}
 }
 
 func (d *DiccionarioHash[K, V]) Cantidad() int {
-
+	return d.cantidad
 }
 
 ///funcion Iterador Interno
@@ -134,7 +161,7 @@ func (d *DiccionarioHash[K, V]) Iterador() IterDiccionario[K, V] {
 
 ///funciones Iterador
 
-func (i *IterDiccionarioImplementacion[K, V]) PanicVacia() {
+func (i *IterDiccionarioImplementacion[K, V]) panicVacia() {
 	if !i.HaySiguiente() {
 		panic("El iterador termino de iterar")
 	}
@@ -150,12 +177,12 @@ func (i *IterDiccionarioImplementacion[K, V]) HaySiguiente() bool {
 }
 
 func (i *IterDiccionarioImplementacion[K, V]) VerActual() (K, V) {
-	i.PanicVacia()
+	i.panicVacia()
 	return i.diccionario.tabla[i.posicion].clave, i.diccionario.tabla[i.posicion].valor
 }
 
 func (i *IterDiccionarioImplementacion[K, V]) Siguiente() {
-	i.PanicVacia()
+	i.panicVacia()
 	i.posicion++
 
 }
@@ -170,13 +197,13 @@ func hashClave[K comparable](clave K) uint32 {
 }
 
 func (d *DiccionarioHash[K, V]) redimensionar(nuevaCapacidad int) {
-	tablaAnterior := d.tabla
+	viejaTabla := d.tabla
 
 	d.tabla = make([]hashElem[K, V], nuevaCapacidad)
 	d.capacidad = nuevaCapacidad
 	d.cantidad = 0
 
-	for _, elem := range tablaAnterior {
+	for _, elem := range viejaTabla {
 		if elem.estado == OCUPADA {
 			d.Guardar(elem.clave, elem.valor)
 		}
