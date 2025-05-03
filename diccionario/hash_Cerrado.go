@@ -77,17 +77,21 @@ func (d *DiccionarioHash[K, V]) Pertenece(clave K) bool {
 	if d.capacidad == 0 {
 		return false
 	}
-	posicion := hashIndice(clave, d.capacidad)
+	start := hashIndice(clave, d.capacidad)
+	pos := start
 
 	for {
-		elem := d.tabla[posicion]
+		elem := d.tabla[pos]
 		if elem.estado == VACIA {
 			return false
 		}
 		if elem.estado == OCUPADA && elem.clave == clave {
 			return true
 		}
-		posicion = (posicion + 1) % d.capacidad
+		pos = (pos + 1) % d.capacidad
+		if pos == start {
+			return false
+		}
 	}
 }
 
@@ -112,9 +116,12 @@ func (d *DiccionarioHash[K, V]) Borrar(clave K) V {
 	if d.capacidad == 0 {
 		panic("La clave no pertenece al diccionario")
 	}
-	posicion := hashIndice(clave, d.capacidad)
+
+	start := hashIndice(clave, d.capacidad)
+	pos := start
+
 	for {
-		elem := &d.tabla[posicion]
+		elem := &d.tabla[pos]
 		if elem.estado == VACIA {
 			panic("La clave no pertenece al diccionario")
 		}
@@ -122,9 +129,16 @@ func (d *DiccionarioHash[K, V]) Borrar(clave K) V {
 			valor := elem.valor
 			elem.estado = BORRADA
 			d.cantidad--
+
+			if d.cantidad == 0 {
+				d.tabla = make([]hashElem[K, V], d.capacidad)
+			}
 			return valor
 		}
-		posicion = (posicion + 1) % d.capacidad
+		pos = (pos + 1) % d.capacidad
+		if pos == start {
+			panic("La clave no pertenece al diccionario")
+		}
 	}
 }
 
