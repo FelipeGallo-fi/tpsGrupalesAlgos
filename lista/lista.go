@@ -35,11 +35,11 @@ type IteradorLista[T any] interface {
 	// Insertar inserta un nuevo elemento en la posición actual del iterador.
 	// Si el iterador está al principio, el elemento se inserta al inicio de la lista.
 	// Si el iterador ya terminó de iterar, el elemento se inserta al final.
-	// El iterador queda apuntando al nuevo nodo insertado.
+	// El iterador queda apuntando al nuevo elemento insertado.
 	Insertar(T)
 
 	// Borrar elimina el elemento en la posición actual del iterador y devuelve su valor.
 	// Si el iterador ya terminó de iterar, entra en pánico con el mensaje "El iterador termino de iterar".
-	// Luego de borrar, el iterador queda apuntando al siguiente nodo.
+	// Luego de borrar, el iterador queda apuntando al siguiente elemento.
 	Borrar() T
 }
