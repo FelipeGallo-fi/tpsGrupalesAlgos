@@ -22,7 +22,13 @@ func CrearListaEnlazada[T any]() Lista[T] {
 }
 
 func (l *listaEnlazada[T]) EstaVacia() bool {
-	return l.largo == 0
+	return l.largo == 0 && l.primero == nil && l.ultimo == nil
+}
+
+func (l *listaEnlazada[T]) funcionPanic() {
+	if l.EstaVacia() {
+		panic("La lista esta vacia")
+	}
 }
 
 func (l *listaEnlazada[T]) InsertarPrimero(dato T) {
@@ -47,31 +53,26 @@ func (l *listaEnlazada[T]) InsertarUltimo(dato T) {
 }
 
 func (l *listaEnlazada[T]) BorrarPrimero() T {
-	if l.EstaVacia() {
-		panic("La lista esta vacia")
-	}
+	l.funcionPanic()
 	dato := l.primero.dato
-	if l.largo > 1 {
-		l.primero = l.primero.siguiente
-	} else {
+	if l.largo == 1 {
 		l.primero = nil
 		l.ultimo = nil
+	} else {
+		l.primero = l.primero.siguiente
 	}
+
 	l.largo--
 	return dato
 }
 
 func (l *listaEnlazada[T]) VerPrimero() T {
-	if l.EstaVacia() {
-		panic("La lista esta vacia")
-	}
+	l.funcionPanic()
 	return l.primero.dato
 }
 
 func (l *listaEnlazada[T]) VerUltimo() T {
-	if l.EstaVacia() {
-		panic("La lista esta vacia")
-	}
+	l.funcionPanic()
 	return l.ultimo.dato
 }
 
@@ -125,14 +126,11 @@ func (iter *iteradorListaImplementacion[T]) Insertar(dato T) {
 
 	if iter.anterior == nil {
 		iter.lista.primero = nuevo
-		if iter.lista.ultimo == nil {
-			iter.lista.ultimo = nuevo
-		}
 	} else {
 		iter.anterior.siguiente = nuevo
 	}
 
-	if iter.actual == nil {
+	if iter.actual == nil || iter.lista.ultimo == nil {
 		iter.lista.ultimo = nuevo
 	}
 
@@ -149,16 +147,13 @@ func (iter *iteradorListaImplementacion[T]) Borrar() T {
 
 	if iter.anterior == nil {
 		iter.lista.primero = iter.actual.siguiente
-		iter.actual = iter.lista.primero
-		if iter.actual == nil {
-			iter.lista.ultimo = nil
-		}
 	} else {
 		iter.anterior.siguiente = iter.actual.siguiente
-		iter.actual = iter.actual.siguiente
-		if iter.actual == nil {
-			iter.lista.ultimo = iter.anterior
-		}
+	}
+	iter.actual = iter.actual.siguiente
+
+	if iter.actual == nil {
+		iter.lista.ultimo = iter.anterior
 	}
 
 	iter.lista.largo--
