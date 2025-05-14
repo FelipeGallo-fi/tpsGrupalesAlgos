@@ -12,6 +12,9 @@ type nodoAb[K comparable, V any] struct {
 	clave K
 	dato  V
 }
+type iteradorExternoABB[K comparable, V any] struct {
+	pila []*nodoAb[K, V]
+}
 
 func CrearABB[K comparable, V any](funcion_cmp func(K, K) int) DiccionarioOrdenado[K, V] {
 	return &ab[K, V]{raiz: nil, cant: 0, comparar: funcion_cmp}
@@ -67,13 +70,10 @@ func borrarRecursiva[K comparable, V any](nodo *nodoAb[K, V], clave K, comparar 
 	cmp := comparar(clave, nodo.clave)
 
 	if cmp < 0 {
-		var dato V
-		nodo.izq, dato = borrarRecursiva(nodo.izq, clave, comparar, cantidad)
-		return nodo, dato
+		nodo.izq,_ = borrarRecursiva(nodo.izq, clave, comparar, cantidad)
 	} else if cmp > 0 {
-		var dato V
-		nodo.der, dato = borrarRecursiva(nodo.der, clave, comparar, cantidad)
-		return nodo, dato
+		
+		nodo.der, _ = borrarRecursiva(nodo.der, clave, comparar, cantidad)
 	} else {
 		*cantidad--
 
@@ -85,13 +85,12 @@ func borrarRecursiva[K comparable, V any](nodo *nodoAb[K, V], clave K, comparar 
 			return nodo.izq, nodo.dato
 		}
 
-		nuevoCantidato := obtenerMinimo(nodo.izq.der)
-		nodo.clave = nuevoCantidato.clave
-		nodo.dato = nuevoCantidato.dato
+		nuevoCantidato := obtenerMinimo(nodo.der)
+		nodo.clave,nodo.dato= nuevoCantidato.clave, nuevoCantidato.dato
 		nodo.der, _ = borrarRecursiva(nodo.der, nuevoCantidato.clave, comparar, cantidad)
-		return nodo, nuevoCantidato.dato
-	}
 
+	}
+	return nodo , nodo.dato
 }
 
 func insertarYActualizar[K comparable, V any](n *nodoAb[K, V], clave K, dato V, cmp func(K, K) int) (*nodoAb[K, V], bool) {
@@ -135,10 +134,8 @@ func obtenerRec[K comparable, V any](n *nodoAb[K, V], clave K, cmp func(K, K) in
 }
 
 func (a *ab[K, V]) Obtener(clave K) V {
+	a.panicPertenece(clave)
 	n := obtenerRec(a.raiz, clave, a.comparar)
-	if n == nil {
-		panic("La clave no pertenece al diccionario")
-	}
 	return n.dato
 }
 
@@ -170,9 +167,7 @@ func (a *ab[K, V]) Iterador() *iteradorExternoABB[K, V] {
 	return nuevoIteradorExternoABB(a.raiz)
 }
 
-type iteradorExternoABB[K comparable, V any] struct {
-	pila []*nodoAb[K, V]
-}
+
 
 func nuevoIteradorExternoABB[K comparable, V any](raiz *nodoAb[K, V]) *iteradorExternoABB[K, V] {
 	it := &iteradorExternoABB[K, V]{}
@@ -205,3 +200,33 @@ func (it *iteradorExternoABB[K, V]) Avanzar() {
 	it.pila = it.pila[:len(it.pila)-1]
 	it.apilarIzquierda(nodo.der)
 }
+
+
+func (a *ab[K, V]) IterarRango(desde , hasta *K, visitar func(K,V) bool){
+	iterarRangoRecursivamente(a.raiz, desde ,hasta , a.comparar , visitar)
+}
+
+func iterarRangoRecursivamente[K comparable , V any](nodo *nodoAb[K, V],desde , hasta *K, comparar func(K, K) int , visitar func (K,V) bool) bool {
+	if nodo == nil{
+		return true
+	}
+
+	if desde != nil && comparar(nodo.clave , *desde) < 0{
+		return iterarRangoRecursivamente(nodo.der , desde , hasta , comparar , visitar)
+	}  
+	
+	if hasta != nil && comparar(nodo.clave , *hasta) > 0 {
+		return iterarRangoRecursivamente(nodo.izq , desde, hasta, comparar, visitar)
+	}
+
+	
+	if !iterarRangoRecursivamente(nodo.izq, desde, hasta, comparar, visitar) {
+        return false
+    }
+    if !visitar(nodo.clave, nodo.dato) {
+        return false
+    }
+    return iterarRangoRecursivamente(nodo.der, desde, hasta, comparar, visitar)
+}
+
+
