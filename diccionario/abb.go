@@ -70,9 +70,9 @@ func borrarRecursiva[K comparable, V any](nodo *nodoAb[K, V], clave K, comparar 
 	cmp := comparar(clave, nodo.clave)
 
 	if cmp < 0 {
-		nodo.izq,_ = borrarRecursiva(nodo.izq, clave, comparar, cantidad)
+		nodo.izq, _ = borrarRecursiva(nodo.izq, clave, comparar, cantidad)
 	} else if cmp > 0 {
-		
+
 		nodo.der, _ = borrarRecursiva(nodo.der, clave, comparar, cantidad)
 	} else {
 		*cantidad--
@@ -86,11 +86,11 @@ func borrarRecursiva[K comparable, V any](nodo *nodoAb[K, V], clave K, comparar 
 		}
 
 		nuevoCantidato := obtenerMinimo(nodo.der)
-		nodo.clave,nodo.dato= nuevoCantidato.clave, nuevoCantidato.dato
+		nodo.clave, nodo.dato = nuevoCantidato.clave, nuevoCantidato.dato
 		nodo.der, _ = borrarRecursiva(nodo.der, nuevoCantidato.clave, comparar, cantidad)
 
 	}
-	return nodo , nodo.dato
+	return nodo, nodo.dato
 }
 
 func insertarYActualizar[K comparable, V any](n *nodoAb[K, V], clave K, dato V, cmp func(K, K) int) (*nodoAb[K, V], bool) {
@@ -142,15 +142,15 @@ func (a *ab[K, V]) Obtener(clave K) V {
 //---Iterador Interno----
 
 func (a *ab[K, V]) Iterar(visitar func(clave K, dato V) bool) {
-	iterarRec(a.raiz, visitar)
+	iterarInOrder(a.raiz, visitar)
 }
 
-func iterarRec[K comparable, V any](nodo *nodoAb[K, V], f func(clave K, dato V) bool) bool {
+func iterarInOrder[K comparable, V any](nodo *nodoAb[K, V], f func(clave K, dato V) bool) bool {
 	if nodo == nil {
 		return true
 	}
 
-	if !iterarRec(nodo.izq, f) {
+	if !iterarInOrder(nodo.izq, f) {
 		return false
 	}
 
@@ -158,7 +158,7 @@ func iterarRec[K comparable, V any](nodo *nodoAb[K, V], f func(clave K, dato V) 
 		return false
 	}
 
-	return iterarRec(nodo.der, f)
+	return iterarInOrder(nodo.der, f)
 }
 
 //---Iterador Externo----
@@ -166,8 +166,6 @@ func iterarRec[K comparable, V any](nodo *nodoAb[K, V], f func(clave K, dato V) 
 func (a *ab[K, V]) Iterador() *iteradorExternoABB[K, V] {
 	return nuevoIteradorExternoABB(a.raiz)
 }
-
-
 
 func nuevoIteradorExternoABB[K comparable, V any](raiz *nodoAb[K, V]) *iteradorExternoABB[K, V] {
 	it := &iteradorExternoABB[K, V]{}
@@ -186,47 +184,47 @@ func (it *iteradorExternoABB[K, V]) HaySiguiente() bool {
 	return len(it.pila) > 0
 }
 
-func (it *iteradorExternoABB[K, V]) Siguiente() (clave K, dato V) {
-	nodo := it.pila[len(it.pila)-1]
-	return nodo.clave, nodo.dato
-}
-
-func (it *iteradorExternoABB[K, V]) Avanzar() {
-	if len(it.pila) == 0 {
-		return
+func (it *iteradorExternoABB[K, V]) Siguiente() {
+	if !it.HaySiguiente() {
+		panic("El iterador termino de iterar")
 	}
-
 	nodo := it.pila[len(it.pila)-1]
 	it.pila = it.pila[:len(it.pila)-1]
 	it.apilarIzquierda(nodo.der)
 }
 
-
-func (a *ab[K, V]) IterarRango(desde , hasta *K, visitar func(K,V) bool){
-	iterarRangoRecursivamente(a.raiz, desde ,hasta , a.comparar , visitar)
+func (it *iteradorExternoABB[K, V]) VerActual() (K, V) {
+	if !it.HaySiguiente() {
+		panic("El iterador termino de iterar")
+	}
+	nodo := it.pila[len(it.pila)-1]
+	return nodo.clave, nodo.dato
 }
 
-func iterarRangoRecursivamente[K comparable , V any](nodo *nodoAb[K, V],desde , hasta *K, comparar func(K, K) int , visitar func (K,V) bool) bool {
-	if nodo == nil{
+//---Iterador Rango----
+
+func (a *ab[K, V]) IterarRango(desde, hasta *K, visitar func(K, V) bool) {
+	iterarRangoRecursivamente(a.raiz, desde, hasta, a.comparar, visitar)
+}
+
+func iterarRangoRecursivamente[K comparable, V any](nodo *nodoAb[K, V], desde, hasta *K, comparar func(K, K) int, visitar func(K, V) bool) bool {
+	if nodo == nil {
 		return true
 	}
 
-	if desde != nil && comparar(nodo.clave , *desde) < 0{
-		return iterarRangoRecursivamente(nodo.der , desde , hasta , comparar , visitar)
-	}  
-	
-	if hasta != nil && comparar(nodo.clave , *hasta) > 0 {
-		return iterarRangoRecursivamente(nodo.izq , desde, hasta, comparar, visitar)
+	if desde != nil && comparar(nodo.clave, *desde) < 0 {
+		return iterarRangoRecursivamente(nodo.der, desde, hasta, comparar, visitar)
 	}
 
-	
+	if hasta != nil && comparar(nodo.clave, *hasta) > 0 {
+		return iterarRangoRecursivamente(nodo.izq, desde, hasta, comparar, visitar)
+	}
+
 	if !iterarRangoRecursivamente(nodo.izq, desde, hasta, comparar, visitar) {
-        return false
-    }
-    if !visitar(nodo.clave, nodo.dato) {
-        return false
-    }
-    return iterarRangoRecursivamente(nodo.der, desde, hasta, comparar, visitar)
+		return false
+	}
+	if !visitar(nodo.clave, nodo.dato) {
+		return false
+	}
+	return iterarRangoRecursivamente(nodo.der, desde, hasta, comparar, visitar)
 }
-
-
