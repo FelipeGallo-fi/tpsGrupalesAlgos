@@ -52,7 +52,7 @@ func (a *ab[K, V]) Cantidad() int {
 
 func (a *ab[K, V]) panicPertenece(clave K) {
 	if !a.Pertenece(clave) {
-		panic("La clave no pertenece al diccionario")
+		panic("La clave no pertenece al abb")
 	}
 }
 
@@ -78,27 +78,31 @@ func borrarRecursiva[K comparable, V any](nodo *nodoAb[K, V], clave K, comparar 
 	cmp := comparar(clave, nodo.clave)
 
 	if cmp < 0 {
-		nodo.izq, _ = borrarRecursiva(nodo.izq, clave, comparar, cantidad)
+		var elementoBorrado V
+		nodo.izq,elementoBorrado = borrarRecursiva(nodo.izq, clave, comparar, cantidad)
+		return nodo ,elementoBorrado
 	} else if cmp > 0 {
-
-		nodo.der, _ = borrarRecursiva(nodo.der, clave, comparar, cantidad)
-	} else {
+		var elementoBorrado V
+		nodo.der, elementoBorrado= borrarRecursiva(nodo.der, clave, comparar, cantidad)
+		return nodo , elementoBorrado
+	} 
 		*cantidad--
-
+		elementoBorrado := nodo.dato
+		
 		if nodo.izq == nil {
-			return nodo.der, nodo.dato
+			return nodo.der, elementoBorrado
 		}
 
 		if nodo.der == nil {
-			return nodo.izq, nodo.dato
+			return nodo.izq, elementoBorrado
 		}
 
 		nuevoCantidato := obtenerMinimo(nodo.der)
 		nodo.clave, nodo.dato = nuevoCantidato.clave, nuevoCantidato.dato
 		nodo.der, _ = borrarRecursiva(nodo.der, nuevoCantidato.clave, comparar, cantidad)
 
-	}
-	return nodo, nodo.dato
+	
+		return nodo, nodo.dato
 }
 
 func insertarYActualizar[K comparable, V any](n *nodoAb[K, V], clave K, dato V, cmp func(K, K) int) (*nodoAb[K, V], bool) {
