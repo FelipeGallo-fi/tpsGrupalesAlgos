@@ -475,10 +475,10 @@ func BenchmarkABB(b *testing.B) {
 		"ejecutando muchas veces las pruebas para generar un benchmark. Valida que la cantidad " +
 		"sea la adecuada. Luego validamos que podemos obtener y ver si pertenece cada una de las claves geeneradas, " +
 		"y que luego podemos borrar sin problemas")
-	for _, n := range TAMS_VOLUMEN {
+	for _, n := range TAMS_VOLUMEN_ORDENADO {
 		b.Run(fmt.Sprintf("Prueba %d elementos", n), func(b *testing.B) {
 			for i := 0; i < b.N; i++ {
-				ejecutarPruebaVolumen(b, n)
+				ejecutarPruebaVolumenABB(b, n)
 			}
 		})
 	}
@@ -652,10 +652,10 @@ func BenchmarkAbbIterador(b *testing.B) {
 	b.Log("Prueba de stress del Iterador del Diccionario. Prueba guardando distinta cantidad de elementos " +
 		"(muy grandes) b.N elementos, iterarlos todos sin problemas. Se ejecuta cada prueba b.N veces para generar " +
 		"un benchmark")
-	for _, n := range TAMS_VOLUMEN {
+	for _, n := range TAMS_VOLUMEN_ORDENADO {
 		b.Run(fmt.Sprintf("Prueba %d elementos", n), func(b *testing.B) {
 			for i := 0; i < b.N; i++ {
-				ejecutarPruebasVolumenIterador(b, n)
+				ejecutarPruebasVolumenIteradorABB(b, n)
 			}
 		})
 	}
