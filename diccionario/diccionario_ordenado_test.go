@@ -1,28 +1,28 @@
-package diccionario
+package diccionario_test
 
 import (
 	"fmt"
-	TDADiccionario "tdas/tdas-g30/diccionario"
+	TDADiccionario "tdas/tpsGrupalesAlgos/diccionario"
 	"testing"
 
 	"github.com/stretchr/testify/require"
 )
 
-var TAMS_VOLUMEN = []int{12500, 25000, 50000, 100000, 200000, 400000}
+var TAMS_VOLUMEN_ORDENADO = []int{12500, 25000, 50000, 100000, 200000, 400000}
 
 func TestABBDiccionarioVacio(t *testing.T) {
 	t.Log("Comprueba que ABB vacío no tiene claves")
-	abb := TDADiccionario.CrearABB[string,string]()
-	require.Equal(t,0,abb.Cantidad())
+	abb := TDADiccionario.CrearABB[string, string]()
+	require.Equal(t, 0, abb.Cantidad())
 	require.False(t, abb.Pertenece("A"))
 	require.PanicsWithValue(t, "La clave no pertenece al ABB", func() { abb.Obtener("A") })
 	require.PanicsWithValue(t, "La clave no pertenece al ABB", func() { abb.Borrar("A") })
 }
-func TestABBUnElemento(t *testing.T){
+func TestABBUnElemento(t *testing.T) {
 	t.Log("Prueba sobre un ABB vacío que si justo buscamos la clave que es el default del tipo de dato, " +
 		"sigue sin existir")
 
-	abb := TDADiccionario.CrearABB[string,string]()
+	abb := TDADiccionario.CrearABB[string, string]()
 	require.False(t, abb.Pertenece(""))
 	require.PanicsWithValue(t, "La clave no pertenece al Arbol", func() { abb.Obtener("") })
 	require.PanicsWithValue(t, "La clave no pertenece al Arbol", func() { abb.Borrar("") })
@@ -32,7 +32,7 @@ func TestABBUnElemento(t *testing.T){
 	require.PanicsWithValue(t, "La clave no pertenece al abb", func() { abbNum.Obtener(0) })
 	require.PanicsWithValue(t, "La clave no pertenece al abb", func() { abbNum.Borrar(0) })
 }
-func TestABBGuardar(t *testing.T){
+func TestABBGuardar(t *testing.T) {
 	t.Log("Guarda algunos pocos elementos en el abb, y se comprueba que en todo momento funciona acorde")
 	clave1 := "Gato"
 	clave2 := "Perro"
@@ -72,7 +72,7 @@ func TestABBGuardar(t *testing.T){
 	require.EqualValues(t, valores[1], abb.Obtener(claves[1]))
 	require.EqualValues(t, valores[2], abb.Obtener(claves[2]))
 }
-func TestABBReemplazoDato(t *testing.T){
+func TestABBReemplazoDato(t *testing.T) {
 	t.Log("Guarda un par de claves, y luego vuelve a guardar, buscando que el dato se haya reemplazado")
 	clave := "Gato"
 	clave2 := "Perro"
@@ -93,7 +93,7 @@ func TestABBReemplazoDato(t *testing.T){
 	require.EqualValues(t, "miu", dic.Obtener(clave))
 	require.EqualValues(t, "baubau", dic.Obtener(clave2))
 }
-func TestABBResmpalzaoDatoHopscotch(t *testing.T){
+func TestABBResmpalzaoDatoHopscotch(t *testing.T) {
 	t.Log("Guarda bastantes claves, y luego reemplaza sus datos. Luego valida que todos los datos sean " +
 		"correctos. Para una implementación Hopscotch, detecta errores al hacer lugar o guardar elementos.")
 
@@ -110,7 +110,7 @@ func TestABBResmpalzaoDatoHopscotch(t *testing.T){
 	}
 	require.True(t, ok, "Los elementos no fueron actualizados correctamente")
 }
-func TestABBBorrado(t *testing.T){
+func TestABBBorrado(t *testing.T) {
 	t.Log("Guarda algunos pocos elementos en el diccionario, y se los borra, revisando que en todo momento " +
 		"el diccionario se comporte de manera adecuada")
 	clave1 := "Gato"
@@ -165,7 +165,7 @@ func TestAbbReutlizacionDeBorrados(t *testing.T) {
 	require.EqualValues(t, "mundooo!", dic.Obtener(clave))
 }
 
-func TestABBConClavesNumericas(t *testing.T){
+func TestABBConClavesNumericas(t *testing.T) {
 	t.Log("Valida que no solo funcione con strings")
 	dic := TDADiccionario.CrearHash[int, string]()
 	clave := 10
@@ -178,7 +178,7 @@ func TestABBConClavesNumericas(t *testing.T){
 	require.EqualValues(t, valor, dic.Borrar(clave))
 	require.False(t, dic.Pertenece(clave))
 }
-func TestABBConClavesStructs(t *testing.T){
+func TestABBConClavesStructs(t *testing.T) {
 	t.Log("Valida que tambien funcione con estructuras mas complejas")
 	type basico struct {
 		a string
@@ -215,7 +215,7 @@ func TestABBConClavesStructs(t *testing.T){
 	require.EqualValues(t, 2, dic.Obtener(a3))
 
 }
-func TestABBClaveVacia(t *testing.T){
+func TestABBClaveVacia(t *testing.T) {
 	t.Log("Guardamos una clave vacía (i.e. \"\") y deberia funcionar sin problemas")
 	dic := TDADiccionario.CrearHash[string, string]()
 	clave := ""
@@ -224,7 +224,7 @@ func TestABBClaveVacia(t *testing.T){
 	require.EqualValues(t, 1, dic.Cantidad())
 	require.EqualValues(t, clave, dic.Obtener(clave))
 }
-func TestABBValorNulo(t *testing.T){
+func TestABBValorNulo(t *testing.T) {
 	t.Log("Probamos que el valor puede ser nil sin problemas")
 	dic := TDADiccionario.CrearHash[string, *int]()
 	clave := "Pez"
@@ -366,7 +366,6 @@ func TestAbbIteradorInternoValoresConBorrados(t *testing.T) {
 	require.EqualValues(t, 720, factorial)
 }
 
-
 func ejecutarPruebaVolumen(b *testing.B, n int) {
 	dic := TDADiccionario.CrearHash[string, int]()
 
@@ -504,7 +503,6 @@ func TestAbbIteradorNoLlegaAlFinal(t *testing.T) {
 	require.NotEqualValues(t, -1, buscar(tercero, claves))
 }
 
-
 func TestPruebaIterarTrasBorrados(t *testing.T) {
 	t.Log("Prueba de caja blanca: Esta prueba intenta verificar el comportamiento del hash abierto cuando " +
 		"queda con listas vacías en su tabla. El iterador debería ignorar las listas vacías, avanzando hasta " +
@@ -636,22 +634,130 @@ func TestVolumenIteradorCorte(t *testing.T) {
 		"No debería haber seguido ejecutando si encontramos un elemento que hizo que la iteración corte")
 }
 
-
-
 //POSIBLES PRUEBAS CONCRETAS DE ABB
 
+func TestABBMinMax(t *testing.T) {
+	t.Log("Verifica que el recorrido InOrder incluya correctamente los elementos mínimo y máximo del ABB")
+	abb := TDADiccionario.CrearABB[int, string](func(a, b int) int { return a - b })
+	claves := []int{5, 3, 8, 1, 4, 7, 9}
+	for _, c := range claves {
+		abb.Guardar(c, fmt.Sprintf("valor%d", c))
+	}
 
-func TestABBMinMax(t *testing.T)
-func TestABBOInOrder(t *testing.T)
-func TestABBOInOrderConCorte(t *testing.T)
-func TestABBIteradorExterno(t *testing.T){
-	//hacer un reccorido completo usando el iterador externo 
-}
-func TestABBIteradorExternoCorte(t *testing.T){
-	//hacer un reccorido com corte usando el iterador externo 
+	obtenidoMin := false
+	obtenidoMax := false
+	abb.Iterar(func(clave int, _ string) bool {
+		if clave == 1 {
+			obtenidoMin = true
+		}
+		if clave == 9 {
+			obtenidoMax = true
+		}
+		return true
+	})
+
+	require.True(t, obtenidoMin, "El recorrido no incluyó el elemento mínimo")
+	require.True(t, obtenidoMax, "El recorrido no incluyó el elemento máximo")
 }
 
-func TestABBIterador(t *testing.T){
-	//probar que el iterador funciona correctamente
+func TestABBOInOrder(t *testing.T) {
+	t.Log("Verifica que el recorrido interno InOrder respete el orden creciente de claves")
+	abb := TDADiccionario.CrearABB[int, string](func(a, b int) int { return a - b })
+	claves := []int{5, 3, 8, 1, 4, 7, 9}
+	for _, c := range claves {
+		abb.Guardar(c, fmt.Sprintf("valor%d", c))
+	}
+
+	var orden []int
+	abb.Iterar(func(clave int, _ string) bool {
+		orden = append(orden, clave)
+		return true
+	})
+
+	require.Equal(t, []int{1, 3, 4, 5, 7, 8, 9}, orden, "El recorrido no es InOrder")
 }
 
+func TestABBOInOrderConCorte(t *testing.T) {
+	t.Log("Verifica que se pueda cortar la iteración interna antes de recorrer todo el ABB")
+	abb := TDADiccionario.CrearABB[int, string](func(a, b int) int { return a - b })
+	claves := []int{5, 3, 8, 1, 4, 7, 9}
+	for _, c := range claves {
+		abb.Guardar(c, fmt.Sprintf("valor%d", c))
+	}
+
+	var primeros []int
+	abb.Iterar(func(clave int, _ string) bool {
+		primeros = append(primeros, clave)
+		return len(primeros) < 3
+	})
+
+	require.Equal(t, []int{1, 3, 4}, primeros, "La iteración no cortó en el momento esperado")
+}
+
+func TestABBIteradorExterno(t *testing.T) {
+	t.Log("Verifica que el iterador externo recorra todos los elementos en orden")
+	abb := TDADiccionario.CrearABB[int, string](func(a, b int) int { return a - b })
+	claves := []int{5, 3, 8, 1, 4, 7, 9}
+	for _, c := range claves {
+		abb.Guardar(c, fmt.Sprintf("valor%d", c))
+	}
+
+	iter := abb.Iterador()
+	var resultado []int
+	for iter.HaySiguiente() {
+		c, _ := iter.VerActual()
+		resultado = append(resultado, c)
+		iter.Siguiente()
+	}
+
+	require.Equal(t, []int{1, 3, 4, 5, 7, 8, 9}, resultado, "El recorrido del iterador externo no es InOrder")
+}
+
+func TestABBIteradorExternoCorte(t *testing.T) {
+	t.Log("Verifica que se pueda cortar el recorrido externo antes de iterar todo el ABB")
+	abb := TDADiccionario.CrearABB[int, string](func(a, b int) int { return a - b })
+	claves := []int{5, 3, 8, 1, 4, 7, 9}
+	for _, c := range claves {
+		abb.Guardar(c, fmt.Sprintf("valor%d", c))
+	}
+
+	iter := abb.Iterador()
+	var resultado []int
+	for iter.HaySiguiente() && len(resultado) < 3 {
+		c, _ := iter.VerActual()
+		resultado = append(resultado, c)
+		iter.Siguiente()
+	}
+
+	require.Equal(t, []int{1, 3, 4}, resultado, "El iterador externo no cortó correctamente")
+}
+
+func TestABBIterador(t *testing.T) {
+	t.Log("Verifica el funcionamiento completo del iterador externo: orden, contenido y panics al final")
+	abb := TDADiccionarioCrearABB[int, string](func(a, b int) int { return a - b })
+	abb.Guardar(2, "dos")
+	abb.Guardar(1, "uno")
+	abb.Guardar(3, "tres")
+
+	iter := abb.Iterador()
+	require.True(t, iter.HaySiguiente(), "Debe haber al menos un elemento al comenzar")
+
+	c1, v1 := iter.VerActual()
+	require.Equal(t, 1, c1, "Primera clave incorrecta")
+	require.Equal(t, "uno", v1, "Primer valor incorrecto")
+	iter.Siguiente()
+
+	c2, v2 := iter.VerActual()
+	require.Equal(t, 2, c2, "Segunda clave incorrecta")
+	require.Equal(t, "dos", v2, "Segundo valor incorrecto")
+	iter.Siguiente()
+
+	c3, v3 := iter.VerActual()
+	require.Equal(t, 3, c3, "Tercera clave incorrecta")
+	require.Equal(t, "tres", v3, "Tercer valor incorrecto")
+	iter.Siguiente()
+
+	require.False(t, iter.HaySiguiente(), "El iterador debería estar al final")
+	require.PanicsWithValue(t, "El iterador termino de iterar", func() { iter.VerActual() })
+	require.PanicsWithValue(t, "El iterador termino de iterar", func() { iter.Siguiente() })
+}

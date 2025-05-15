@@ -12,8 +12,16 @@ type nodoAb[K comparable, V any] struct {
 	clave K
 	dato  V
 }
+
 type iteradorExternoABB[K comparable, V any] struct {
 	pila []*nodoAb[K, V]
+}
+
+type iteradorRangoABB[K comparable, V any] struct {
+	pila     []*nodoAb[K, V]
+	desde    *K
+	hasta    *K
+	comparar func(K, K) int
 }
 
 func CrearABB[K comparable, V any](funcion_cmp func(K, K) int) DiccionarioOrdenado[K, V] {
@@ -163,7 +171,7 @@ func iterarInOrder[K comparable, V any](nodo *nodoAb[K, V], f func(clave K, dato
 
 //---Iterador Externo----
 
-func (a *ab[K, V]) Iterador() *iteradorExternoABB[K, V] {
+func (a *ab[K, V]) Iterador() IterDiccionario[K, V] {
 	return nuevoIteradorExternoABB(a.raiz)
 }
 
@@ -201,7 +209,7 @@ func (it *iteradorExternoABB[K, V]) VerActual() (K, V) {
 	return nodo.clave, nodo.dato
 }
 
-//---Iterador Rango----
+//---Iterador Rango Interno----
 
 func (a *ab[K, V]) IterarRango(desde, hasta *K, visitar func(K, V) bool) {
 	iterarRangoRecursivamente(a.raiz, desde, hasta, a.comparar, visitar)
@@ -227,4 +235,57 @@ func iterarRangoRecursivamente[K comparable, V any](nodo *nodoAb[K, V], desde, h
 		return false
 	}
 	return iterarRangoRecursivamente(nodo.der, desde, hasta, comparar, visitar)
+}
+
+//---Iterador Rango Externo----
+
+func nuevoIteradorRangoABB[K comparable, V any](raiz *nodoAb[K, V], desde, hasta *K, cmp func(K, K) int) *iteradorRangoABB[K, V] {
+	it := &iteradorRangoABB[K, V]{desde: desde, hasta: hasta, comparar: cmp}
+	it.apilarIzquierdaRango(raiz)
+	return it
+}
+
+func (it *iteradorRangoABB[K, V]) apilarIzquierdaRango(n *nodoAb[K, V]) {
+	for n != nil {
+		if it.desde == nil || it.comparar(n.clave, *it.desde) >= 0 {
+			it.pila = append(it.pila, n)
+			n = n.izq
+		} else {
+			n = n.der
+		}
+	}
+}
+
+func (it *iteradorRangoABB[K, V]) HaySiguiente() bool {
+	for len(it.pila) > 0 {
+		actual := it.pila[len(it.pila)-1]
+		if it.hasta != nil && it.comparar(actual.clave, *it.hasta) > 0 {
+			it.pila = it.pila[:len(it.pila)-1]
+			it.apilarIzquierdaRango(actual.der)
+		} else {
+			return true
+		}
+	}
+	return false
+}
+
+func (it *iteradorRangoABB[K, V]) VerActual() (K, V) {
+	if !it.HaySiguiente() {
+		panic("El iterador termino de iterar")
+	}
+	n := it.pila[len(it.pila)-1]
+	return n.clave, n.dato
+}
+
+func (it *iteradorRangoABB[K, V]) Siguiente() {
+	if !it.HaySiguiente() {
+		panic("El iterador termino de iterar")
+	}
+	n := it.pila[len(it.pila)-1]
+	it.pila = it.pila[:len(it.pila)-1]
+	it.apilarIzquierdaRango(n.der)
+}
+
+func (a *ab[K, V]) IteradorRango(desde *K, hasta *K) IterDiccionario[K, V] {
+	return nuevoIteradorRangoABB(a.raiz, desde, hasta, a.comparar)
 }
