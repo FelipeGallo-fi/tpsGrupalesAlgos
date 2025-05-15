@@ -10,7 +10,6 @@ import (
 
 var TAMS_VOLUMEN_ORDENADO = []int{12500, 25000, 50000, 100000, 200000, 400000}
 
-
 func cmpString(a, b string) int {
 	if a < b {
 		return -1
@@ -30,7 +29,6 @@ func cmpInt(a, b int) int {
 	}
 	return 0
 }
-
 
 func TestABBDiccionarioVacio(t *testing.T) {
 	t.Log("Comprueba que ABB vacío no tiene claves")
@@ -101,7 +99,7 @@ func TestABBReemplazoDato(t *testing.T) {
 	t.Log("Guarda un par de claves, y luego vuelve a guardar, buscando que el dato se haya reemplazado")
 	clave := "Gato"
 	clave2 := "Perro"
-	abb:= TDADiccionario.CrearABB[string, string](cmpString)
+	abb := TDADiccionario.CrearABB[string, string](cmpString)
 	abb.Guardar(clave, "miau")
 	abb.Guardar(clave2, "guau")
 	require.True(t, abb.Pertenece(clave))
@@ -122,7 +120,7 @@ func TestABBResmpalzaoDatoHopscotch(t *testing.T) {
 	t.Log("Guarda bastantes claves, y luego reemplaza sus datos. Luego valida que todos los datos sean " +
 		"correctos. Para una implementación Hopscotch, detecta errores al hacer lugar o guardar elementos.")
 
-	abb:= TDADiccionario.CrearABB[int, int](cmpInt)
+	abb := TDADiccionario.CrearABB[int, int](cmpInt)
 	for i := 0; i < 500; i++ {
 		abb.Guardar(i, i)
 	}
@@ -146,7 +144,7 @@ func TestABBBorrado(t *testing.T) {
 	valor3 := "moo"
 	claves := []string{clave1, clave2, clave3}
 	valores := []string{valor1, valor2, valor3}
-	abb:= TDADiccionario.CrearABB[string, string](cmpString)
+	abb := TDADiccionario.CrearABB[string, string](cmpString)
 
 	require.False(t, abb.Pertenece(claves[0]))
 	require.False(t, abb.Pertenece(claves[0]))
@@ -178,7 +176,7 @@ func TestABBBorrado(t *testing.T) {
 func TestAbbReutlizacionDeBorrados(t *testing.T) {
 	t.Log("Prueba de caja blanca: revisa, para el caso que fuere un HashCerrado, que no haya problema " +
 		"reinsertando un elemento borrado")
-	abb:= TDADiccionario.CrearABB[string, string](cmpString)
+	abb := TDADiccionario.CrearABB[string, string](cmpString)
 	clave := "hola"
 	abb.Guardar(clave, "mundo!")
 	abb.Borrar(clave)
@@ -192,7 +190,7 @@ func TestAbbReutlizacionDeBorrados(t *testing.T) {
 
 func TestABBConClavesNumericas(t *testing.T) {
 	t.Log("Valida que no solo funcione con strings")
-	abb:= TDADiccionario.CrearABB[int, string](cmpInt)
+	abb := TDADiccionario.CrearABB[int, string](cmpInt)
 	clave := 10
 	valor := "Gatito"
 
@@ -203,48 +201,81 @@ func TestABBConClavesNumericas(t *testing.T) {
 	require.EqualValues(t, valor, abb.Borrar(clave))
 	require.False(t, abb.Pertenece(clave))
 }
-/*
+
 func TestABBConClavesStructs(t *testing.T) {
-	t.Log("Valida que tambien funcione con estructuras mas complejas")
-	type basico struct {
-		a string
-		b int
-	}
-	type avanzado struct {
-		w int
-		x basico
-		y basico
-		z string
+	t.Log("Valida que el ABB funcione correctamente con claves de tipo struct y operaciones completas")
+
+	type Persona struct {
+		nombre string
+		edad   int
 	}
 
-	abb:= TDADiccionario.CrearABB[avanzado, int]()
+	// Comparador por edad
+	cmp := func(p1, p2 Persona) int {
+		return p1.edad - p2.edad
+	}
 
-	a1 := avanzado{w: 10, z: "hola", x: basico{a: "mundo", b: 8}, y: basico{a: "!", b: 10}}
-	a2 := avanzado{w: 10, z: "aloh", x: basico{a: "odnum", b: 14}, y: basico{a: "!", b: 5}}
-	a3 := avanzado{w: 10, z: "hello", x: basico{a: "world", b: 8}, y: basico{a: "!", b: 4}}
+	abb := TDADiccionario.CrearABB[Persona, string](cmp)
 
-	abb.Guardar(a1, 0)
-	abb.Guardar(a2, 1)
-	abb.Guardar(a3, 2)
+	// Claves de prueba
+	p1 := Persona{nombre: "Ana", edad: 30}
+	p2 := Persona{nombre: "Luis", edad: 25}
+	p3 := Persona{nombre: "Sol", edad: 35}
+	p4 := Persona{nombre: "Eva", edad: 28}
+	p5 := Persona{nombre: "Juan", edad: 40}
 
-	require.True(t, abb.Pertenece(a1))
-	require.True(t, abb.Pertenece(a2))
-	require.True(t, abb.Pertenece(a3))
-	require.EqualValues(t, 0, abb.Obtener(a1))
-	require.EqualValues(t, 1, abb.Obtener(a2))
-	require.EqualValues(t, 2, abb.Obtener(a3))
-	abb.Guardar(a1, 5)
-	require.EqualValues(t, 5, abb.Obtener(a1))
-	require.EqualValues(t, 2, abb.Obtener(a3))
-	require.EqualValues(t, 5, abb.Borrar(a1))
-	require.False(t, abb.Pertenece(a1))
-	require.EqualValues(t, 2, abb.Obtener(a3))
+	claves := []Persona{p1, p2, p3, p4, p5}
+	valores := map[Persona]string{
+		p1: "ana",
+		p2: "luis",
+		p3: "sol",
+		p4: "eva",
+		p5: "juan",
+	}
 
+	for _, p := range claves {
+		abb.Guardar(p, valores[p])
+	}
+
+	require.Equal(t, 5, abb.Cantidad(), "La cantidad de elementos no es la esperada")
+
+	for _, p := range claves {
+		require.True(t, abb.Pertenece(p), "El ABB debería contener a %s", p.nombre)
+		require.Equal(t, valores[p], abb.Obtener(p), "Valor incorrecto para %s", p.nombre)
+	}
+
+	// Verifica el recorrido completo (InOrder) por edad
+	var recorrido []string
+	abb.Iterar(func(p Persona, _ string) bool {
+		recorrido = append(recorrido, p.nombre)
+		return true
+	})
+	require.Equal(t, []string{"Luis", "Eva", "Ana", "Sol", "Juan"}, recorrido, "El recorrido InOrder no respeta el orden por edad")
+
+	// Verifica recorrido por rango: edades entre 28 y 35 inclusive
+	desde := Persona{edad: 28}
+	hasta := Persona{edad: 35}
+	var enRango []string
+	abb.IterarRango(&desde, &hasta, func(p Persona, _ string) bool {
+		enRango = append(enRango, p.nombre)
+		return true
+	})
+	require.Equal(t, []string{"Eva", "Ana", "Sol"}, enRango, "IterarRango no devolvió los elementos esperados")
+
+	// Borrar uno a uno y verificar consistencia
+	for _, p := range claves {
+		require.True(t, abb.Pertenece(p), "Debe pertenecer antes de borrar a %s", p.nombre)
+		val := abb.Borrar(p)
+		require.Equal(t, valores[p], val, "El valor devuelto por Borrar es incorrecto para %s", p.nombre)
+		require.False(t, abb.Pertenece(p), "No debe pertenecer después de borrar a %s", p.nombre)
+	}
+
+	require.Equal(t, 0, abb.Cantidad(), "El ABB debería estar vacío después de borrar todo")
 }
-	*/
+
 func TestABBClaveVacia(t *testing.T) {
 	t.Log("Guardamos una clave vacía (i.e. \"\") y deberia funcionar sin problemas")
-	abb:= TDADiccionario.CrearABB[string, string](cmpString)
+	abb := TDADiccionario.CrearABB[string, string](cmpString)
 	clave := ""
 	abb.Guardar(clave, clave)
 	require.True(t, abb.Pertenece(clave))
@@ -253,7 +284,7 @@ func TestABBClaveVacia(t *testing.T) {
 }
 func TestABBValorNulo(t *testing.T) {
 	t.Log("Probamos que el valor puede ser nil sin problemas")
-	abb:= TDADiccionario.CrearABB[string, *int](cmpString)
+	abb := TDADiccionario.CrearABB[string, *int](cmpString)
 	clave := "Pez"
 	abb.Guardar(clave, nil)
 	require.True(t, abb.Pertenece(clave))
@@ -270,7 +301,7 @@ func TestABBCadenaLargaParticular(t *testing.T) {
 	claves := make([]string, 10)
 	cadena := "%d~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~" +
 		"~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~"
-	abb:= TDADiccionario.CrearABB[string, string](cmpString)
+	abb := TDADiccionario.CrearABB[string, string](cmpString)
 	valores := []string{"A", "B", "C", "D", "E", "F", "G", "H", "I", "J"}
 	for i := 0; i < 10; i++ {
 		claves[i] = fmt.Sprintf(cadena, i)
@@ -291,7 +322,7 @@ func TestABBGuardarYBorrarRepetidasVeces(t *testing.T) {
 		"los borrados para agrandar en un Hash Cerrado. Si no se agranda, muy probablemente se quede en un ciclo " +
 		"infinito")
 
-	abb:= TDADiccionario.CrearABB[int, int](cmpInt)
+	abb := TDADiccionario.CrearABB[int, int](cmpInt)
 	for i := 0; i < 1000; i++ {
 		abb.Guardar(i, i)
 		require.True(t, abb.Pertenece(i))
@@ -315,7 +346,7 @@ func TestAbbIteradorInternoClaves(t *testing.T) {
 	clave2 := "Perro"
 	clave3 := "Vaca"
 	claves := []string{clave1, clave2, clave3}
-	abb:= TDADiccionario.CrearABB[string, *int](cmpString)
+	abb := TDADiccionario.CrearABB[string, *int](cmpString)
 	abb.Guardar(claves[0], nil)
 	abb.Guardar(claves[1], nil)
 	abb.Guardar(claves[2], nil)
@@ -331,9 +362,9 @@ func TestAbbIteradorInternoClaves(t *testing.T) {
 	})
 
 	require.EqualValues(t, 3, cantidad)
-	require.NotEqualValues(t, -1,buscarAbb(cs[0], claves))
-	require.NotEqualValues(t, -1,buscarAbb(cs[1], claves))
-	require.NotEqualValues(t, -1,buscarAbb(cs[2], claves))
+	require.NotEqualValues(t, -1, buscarAbb(cs[0], claves))
+	require.NotEqualValues(t, -1, buscarAbb(cs[1], claves))
+	require.NotEqualValues(t, -1, buscarAbb(cs[2], claves))
 	require.NotEqualValues(t, cs[0], cs[1])
 	require.NotEqualValues(t, cs[0], cs[2])
 	require.NotEqualValues(t, cs[2], cs[1])
@@ -347,7 +378,7 @@ func TestABBIteradorInternoValores(t *testing.T) {
 	clave4 := "Burrito"
 	clave5 := "Hamster"
 
-	abb:= TDADiccionario.CrearABB[string, int](cmpString)
+	abb := TDADiccionario.CrearABB[string, int](cmpString)
 	abb.Guardar(clave1, 6)
 	abb.Guardar(clave2, 2)
 	abb.Guardar(clave3, 3)
@@ -373,7 +404,7 @@ func TestAbbIteradorInternoValoresConBorrados(t *testing.T) {
 	clave4 := "Burrito"
 	clave5 := "Hamster"
 
-	abb:= TDADiccionario.CrearABB[string, int](cmpString)
+	abb := TDADiccionario.CrearABB[string, int](cmpString)
 	abb.Guardar(clave0, 7)
 	abb.Guardar(clave1, 6)
 	abb.Guardar(clave2, 2)
@@ -394,7 +425,7 @@ func TestAbbIteradorInternoValoresConBorrados(t *testing.T) {
 }
 
 func ejecutarPruebaVolumenABB(b *testing.B, n int) {
-	abb:= TDADiccionario.CrearABB[string, int](cmpString)
+	abb := TDADiccionario.CrearABB[string, int](cmpString)
 
 	claves := make([]string, n)
 	valores := make([]int, n)
@@ -423,7 +454,7 @@ func ejecutarPruebaVolumenABB(b *testing.B, n int) {
 	require.True(b, ok, "Pertenece y Obtener con muchos elementos no funciona correctamente")
 	require.EqualValues(b, n, abb.Cantidad(), "La cantidad de elementos es incorrecta")
 
-	// Verifica que borre y devuelva los valores correctos 
+	// Verifica que borre y devuelva los valores correctos
 	for i := 0; i < n; i++ {
 		ok = abb.Borrar(claves[i]) == valores[i]
 		if !ok {
@@ -455,7 +486,7 @@ func BenchmarkABB(b *testing.B) {
 
 func TestIterarDiccionarioVacioABB(t *testing.T) {
 	t.Log("Iterar sobre diccionario vacio es simplemente tenerlo al final")
-	abb:= TDADiccionario.CrearABB[string, int](cmpString)
+	abb := TDADiccionario.CrearABB[string, int](cmpString)
 	iter := abb.Iterador()
 	require.False(t, iter.HaySiguiente())
 	require.PanicsWithValue(t, "El iterador termino de iterar", func() { iter.VerActual() })
@@ -473,7 +504,7 @@ func TestABBIterar(t *testing.T) {
 	valor3 := "moo"
 	claves := []string{clave1, clave2, clave3}
 	valores := []string{valor1, valor2, valor3}
-	abb:= TDADiccionario.CrearABB[string, string](cmpString)
+	abb := TDADiccionario.CrearABB[string, string](cmpString)
 	abb.Guardar(claves[0], valores[0])
 	abb.Guardar(claves[1], valores[1])
 	abb.Guardar(claves[2], valores[2])
@@ -481,11 +512,11 @@ func TestABBIterar(t *testing.T) {
 
 	require.True(t, iter.HaySiguiente())
 	primero, _ := iter.VerActual()
-	require.NotEqualValues(t, -1,buscarAbb(primero, claves))
+	require.NotEqualValues(t, -1, buscarAbb(primero, claves))
 
 	iter.Siguiente()
 	segundo, segundo_valor := iter.VerActual()
-	require.NotEqualValues(t, -1,buscarAbb(segundo, claves))
+	require.NotEqualValues(t, -1, buscarAbb(segundo, claves))
 	require.EqualValues(t, valores[buscarAbb(segundo, claves)], segundo_valor)
 	require.NotEqualValues(t, primero, segundo)
 	require.True(t, iter.HaySiguiente())
@@ -493,7 +524,7 @@ func TestABBIterar(t *testing.T) {
 	iter.Siguiente()
 	require.True(t, iter.HaySiguiente())
 	tercero, _ := iter.VerActual()
-	require.NotEqualValues(t, -1,buscarAbb(tercero, claves))
+	require.NotEqualValues(t, -1, buscarAbb(tercero, claves))
 	require.NotEqualValues(t, primero, tercero)
 	require.NotEqualValues(t, segundo, tercero)
 	iter.Siguiente()
@@ -505,7 +536,7 @@ func TestABBIterar(t *testing.T) {
 
 func TestAbbIteradorNoLlegaAlFinal(t *testing.T) {
 	t.Log("Crea un iterador y no lo avanza. Luego crea otro iterador y lo avanza.")
-	abb:= TDADiccionario.CrearABB[string, string](cmpString)
+	abb := TDADiccionario.CrearABB[string, string](cmpString)
 	claves := []string{"A", "B", "C"}
 	abb.Guardar(claves[0], "")
 	abb.Guardar(claves[1], "")
@@ -525,9 +556,9 @@ func TestAbbIteradorNoLlegaAlFinal(t *testing.T) {
 	require.NotEqualValues(t, primero, segundo)
 	require.NotEqualValues(t, tercero, segundo)
 	require.NotEqualValues(t, primero, tercero)
-	require.NotEqualValues(t, -1,buscarAbb(primero, claves))
-	require.NotEqualValues(t, -1,buscarAbb(segundo, claves))
-	require.NotEqualValues(t, -1,buscarAbb(tercero, claves))
+	require.NotEqualValues(t, -1, buscarAbb(primero, claves))
+	require.NotEqualValues(t, -1, buscarAbb(segundo, claves))
+	require.NotEqualValues(t, -1, buscarAbb(tercero, claves))
 }
 
 func TestAbbPruebaIterarTrasBorrados(t *testing.T) {
@@ -539,7 +570,7 @@ func TestAbbPruebaIterarTrasBorrados(t *testing.T) {
 	clave2 := "Perro"
 	clave3 := "Vaca"
 
-	abb:= TDADiccionario.CrearABB[string, string](cmpString)
+	abb := TDADiccionario.CrearABB[string, string](cmpString)
 	abb.Guardar(clave1, "")
 	abb.Guardar(clave2, "")
 	abb.Guardar(clave3, "")
@@ -563,12 +594,12 @@ func TestAbbPruebaIterarTrasBorrados(t *testing.T) {
 }
 
 func ejecutarPruebasVolumenIteradorABB(b *testing.B, n int) {
-	abb:= TDADiccionario.CrearABB[string, *int](cmpString)
+	abb := TDADiccionario.CrearABB[string, *int](cmpString)
 
 	claves := make([]string, n)
 	valores := make([]int, n)
 
-	// Inserta 'n' parejas en el hash 
+	// Inserta 'n' parejas en el hash
 	for i := 0; i < n; i++ {
 		claves[i] = fmt.Sprintf("%08d", i)
 		valores[i] = i
@@ -634,7 +665,7 @@ func TestABBVolumenIteradorCorte(t *testing.T) {
 	t.Log("Prueba de volumen de iterador interno, para validar que siempre que se indique que se corte" +
 		" la iteración con la función visitar, se corte")
 
-	abb:= TDADiccionario.CrearABB[int, int](cmpInt)
+	abb := TDADiccionario.CrearABB[int, int](cmpInt)
 
 	// Inserta 'n' parejas en el hash //
 	for i := 0; i < 10000; i++ {
