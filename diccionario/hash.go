@@ -8,19 +8,22 @@ import (
 type estadoCelda int
 
 const (
-	cargaMax        = 0.7
-	capacidadMinima = 20
+	_CARGA_MAX       = 0.7
+	_CAPACIDAD_MINIMA = 20
+	_REDIMENSION = 2
+	_REDUCCION = 0.25
 )
 
 const (
-	VACIA estadoCelda = iota
-	OCUPADA
-	BORRADA
+	_VACIA estadoCelda = iota
+	_OCUPADA
+	_BORRADA
 )
 
 type diccionarioHash[K comparable, V any] struct {
 	tabla     []hashElem[K, V]
 	cantidad  int
+	borrados int
 	capacidad int
 }
 
@@ -36,43 +39,58 @@ type iterDiccionarioImplementacion[K comparable, V any] struct {
 }
 
 func CrearHash[K comparable, V any]() Diccionario[K, V] {
-	return &diccionarioHash[K, V]{}
+	d := &diccionarioHash[K, V]{}
+	d.inicializarTabla(_CAPACIDAD_MINIMA)
+	return d
 }
 
-func (d *diccionarioHash[K, V]) inicializarTabla() {
-	if d.capacidad == 0 {
-		d.capacidad = capacidadMinima
+func (d *diccionarioHash[K, V]) inicializarTabla(capacidad int) {
+	if capacidad < _CAPACIDAD_MINIMA {
+		capacidad = _CAPACIDAD_MINIMA
 	}
+	d.capacidad = _CAPACIDAD_MINIMA
 	d.tabla = make([]hashElem[K, V], d.capacidad)
 }
 
-func (d *diccionarioHash[K, V]) Guardar(clave K, valor V) {
-	if d.cantidad == 0 || d.tabla == nil {
-		d.inicializarTabla()
-	}
-
-	if float64(d.cantidad+1)/float64(d.capacidad) > cargaMax {
-		d.redimensionar(d.capacidad * 2)
-	}
-
-	posicion := hash(clave, d.capacidad)
+func (d *diccionarioHash[K, V]) buscarPos(clave K) (pos int , esta bool){
+	pos = hash(clave , d.capacidad)
+	primerBorrado := -1
 
 	for {
-		elem := &d.tabla[posicion]
+		elem := &d.tabla[pos]
 
-		if elem.estado == VACIA || elem.estado == BORRADA {
-			break
+		if elem.estado == _VACIA {
+			if primerBorrado != -1 {
+				return primerBorrado, false
+			}
+			return pos, false
 		}
 
-		if elem.estado == OCUPADA && elem.clave == clave {
-			elem.valor = valor
-			return
+		if elem.estado == _BORRADA {
+			if primerBorrado == -1 {
+				primerBorrado = pos
+			}
+		} else if elem.estado == _OCUPADA && elem.clave == clave {
+			return pos, true
 		}
 
-		posicion = (posicion + 1) % d.capacidad
+		pos = (pos + 1) % d.capacidad
+	}
+}
+
+func (d *diccionarioHash[K, V]) Guardar(clave K, valor V) {
+
+	if float64(d.cantidad +d.borrados +1)/float64(d.capacidad) > _CARGA_MAX{
+		d.redimensionar(d.capacidad * _REDIMENSION)
 	}
 
-	d.tabla[posicion] = hashElem[K, V]{clave: clave, valor: valor, estado: OCUPADA}
+	posicion , encontada := d.buscarPos(clave)
+	if encontada {
+		d.tabla[posicion].valor = valor
+		return
+	}
+
+	d.tabla[posicion] = hashElem[K, V]{clave: clave, valor: valor, estado: _OCUPADA}
 	d.cantidad++
 }
 
@@ -80,39 +98,20 @@ func (d *diccionarioHash[K, V]) Pertenece(clave K) bool {
 	if d.capacidad == 0 {
 		return false
 	}
-	start := hash(clave, d.capacidad)
-	pos := start
-
-	for {
-		elem := d.tabla[pos]
-		if elem.estado == VACIA {
-			return false
-		}
-		if elem.estado == OCUPADA && elem.clave == clave {
-			return true
-		}
-		pos = (pos + 1) % d.capacidad
-		if pos == start {
-			return false
-		}
-	}
+	_,esta := d.buscarPos(clave)
+	return esta
 }
 
 func (d *diccionarioHash[K, V]) Obtener(clave K) V {
 	if d.capacidad == 0 {
 		panic("La clave no pertenece al diccionario")
 	}
-	posicion := hash(clave, d.capacidad)
-	for {
-		elem := d.tabla[posicion]
-		if elem.estado == VACIA {
-			panic("La clave no pertenece al diccionario")
-		}
-		if elem.estado == OCUPADA && elem.clave == clave {
-			return elem.valor
-		}
-		posicion = (posicion + 1) % d.capacidad
+	posicion , esta := d.buscarPos(clave)
+	if !esta {
+		panic("La clave no pertenece al diccionario")
 	}
+	return d.tabla[posicion].valor
+
 }
 
 func (d *diccionarioHash[K, V]) Borrar(clave K) V {
@@ -120,29 +119,31 @@ func (d *diccionarioHash[K, V]) Borrar(clave K) V {
 		panic("La clave no pertenece al diccionario")
 	}
 
-	start := hash(clave, d.capacidad)
-	pos := start
-
-	for {
-		elem := &d.tabla[pos]
-		if elem.estado == VACIA {
-			panic("La clave no pertenece al diccionario")
-		}
-		if elem.estado == OCUPADA && elem.clave == clave {
-			valor := elem.valor
-			elem.estado = BORRADA
-			d.cantidad--
-
-			if d.cantidad == 0 {
-				d.inicializarTabla()
-			}
-			return valor
-		}
-		pos = (pos + 1) % d.capacidad
-		if pos == start {
-			panic("La clave no pertenece al diccionario")
-		}
+	posicion , esta := d.buscarPos(clave)
+	
+	if !esta {
+		panic("La clave no pertenece al diccionario")
 	}
+
+	valor := d.tabla[posicion].valor
+	d.tabla[posicion].estado = _BORRADA
+	d.cantidad --
+	d.borrados ++
+
+	if d.cantidad == 0 {
+		d.inicializarTabla(_CAPACIDAD_MINIMA)
+		d.borrados = 0 
+	} else if float64(d.cantidad)/float64(d.capacidad) < _REDUCCION && d.capacidad > _CAPACIDAD_MINIMA {
+		nuevaCapacidad := d.capacidad / _REDIMENSION
+		if nuevaCapacidad < _CAPACIDAD_MINIMA {
+			nuevaCapacidad = _CAPACIDAD_MINIMA
+		}
+		d.redimensionar(nuevaCapacidad)
+	}
+
+	return valor
+
+
 }
 
 func (d *diccionarioHash[K, V]) Cantidad() int {
@@ -153,7 +154,7 @@ func (d *diccionarioHash[K, V]) Cantidad() int {
 
 func (d *diccionarioHash[K, V]) Iterar(f func(clave K, dato V) bool) {
 	for _, elemento := range d.tabla {
-		if elemento.estado == OCUPADA {
+		if elemento.estado == _OCUPADA {
 			if !f(elemento.clave, elemento.valor) {
 				return
 			}
@@ -166,7 +167,7 @@ func (d *diccionarioHash[K, V]) Iterar(f func(clave K, dato V) bool) {
 
 func (d *diccionarioHash[K, V]) Iterador() IterDiccionario[K, V] {
 	posicionOpcupada := 0
-	for (posicionOpcupada < len(d.tabla)) && (d.tabla[posicionOpcupada].estado != OCUPADA) {
+	for (posicionOpcupada < len(d.tabla)) && (d.tabla[posicionOpcupada].estado != _OCUPADA) {
 		posicionOpcupada++
 	}
 
@@ -186,10 +187,10 @@ func (i *iterDiccionarioImplementacion[K, V]) panicVacia() {
 
 func (i *iterDiccionarioImplementacion[K, V]) HaySiguiente() bool {
 
-	for i.posicion < len(i.diccionario.tabla) && i.diccionario.tabla[i.posicion].estado != OCUPADA {
+	for i.posicion < len(i.diccionario.tabla) && i.diccionario.tabla[i.posicion].estado != _OCUPADA {
 		i.posicion++
 	}
-	return i.posicion < len(i.diccionario.tabla) && i.diccionario.tabla[i.posicion].estado == OCUPADA
+	return i.posicion < len(i.diccionario.tabla) && i.diccionario.tabla[i.posicion].estado == _OCUPADA
 
 }
 
@@ -227,7 +228,7 @@ func (d *diccionarioHash[K, V]) redimensionar(nuevaCapacidad int) {
 	d.cantidad = 0
 
 	for _, elem := range viejaTabla {
-		if elem.estado == OCUPADA {
+		if elem.estado == _OCUPADA {
 			d.Guardar(elem.clave, elem.valor)
 		}
 	}
