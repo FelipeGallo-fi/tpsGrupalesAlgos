@@ -165,12 +165,15 @@ func (d *diccionarioHash[K, V]) Iterar(f func(clave K, dato V) bool) {
 
 ///funcion Iterador externo
 
-func (d *diccionarioHash[K, V]) Iterador() IterDiccionario[K, V] {
-	posicionOpcupada := 0
-	for (posicionOpcupada < len(d.tabla)) && (d.tabla[posicionOpcupada].estado != _OCUPADA) {
-		posicionOpcupada++
+func (d *diccionarioHash[K, V]) posicionOpcupadaDesde(pos int ) int {
+	for pos < len(d.tabla) && d.tabla[pos].estado != _OCUPADA {
+		pos++
 	}
+	return pos
+}
 
+func (d *diccionarioHash[K, V]) Iterador() IterDiccionario[K, V] {
+	posicionOpcupada := d.posicionOpcupadaDesde(0)
 	return &iterDiccionarioImplementacion[K, V]{
 		diccionario: d,
 		posicion:    posicionOpcupada,
@@ -187,10 +190,8 @@ func (i *iterDiccionarioImplementacion[K, V]) panicVacia() {
 
 func (i *iterDiccionarioImplementacion[K, V]) HaySiguiente() bool {
 
-	for i.posicion < len(i.diccionario.tabla) && i.diccionario.tabla[i.posicion].estado != _OCUPADA {
-		i.posicion++
-	}
-	return i.posicion < len(i.diccionario.tabla) && i.diccionario.tabla[i.posicion].estado == _OCUPADA
+	proximo := i.diccionario.posicionOpcupadaDesde(i.posicion)
+	return proximo < len(i.diccionario.tabla) 
 
 }
 
@@ -201,7 +202,7 @@ func (i *iterDiccionarioImplementacion[K, V]) VerActual() (K, V) {
 
 func (i *iterDiccionarioImplementacion[K, V]) Siguiente() {
 	i.panicVacia()
-	i.posicion++
+	i.posicion = i.diccionario.posicionOpcupadaDesde(i.posicion + 1)
 
 }
 
@@ -226,6 +227,7 @@ func (d *diccionarioHash[K, V]) redimensionar(nuevaCapacidad int) {
 	d.tabla = make([]hashElem[K, V], nuevaCapacidad)
 	d.capacidad = nuevaCapacidad
 	d.cantidad = 0
+	d.borrados= 0
 
 	for _, elem := range viejaTabla {
 		if elem.estado == _OCUPADA {
