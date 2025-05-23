@@ -35,8 +35,8 @@ func TestABBDiccionarioVacio(t *testing.T) {
 	abb := TDADiccionario.CrearABB[string, string](cmpString)
 	require.Equal(t, 0, abb.Cantidad())
 	require.False(t, abb.Pertenece("A"))
-	require.PanicsWithValue(t, "La clave no pertenece al abb", func() { abb.Obtener("A") })
-	require.PanicsWithValue(t, "La clave no pertenece al abb", func() { abb.Borrar("A") })
+	require.PanicsWithValue(t, "La clave no pertenece al diccionario", func() { abb.Obtener("A") })
+	require.PanicsWithValue(t, "La clave no pertenece al diccionario", func() { abb.Borrar("A") })
 }
 
 func TestABBUnElemento(t *testing.T) {
@@ -45,13 +45,13 @@ func TestABBUnElemento(t *testing.T) {
 
 	abb := TDADiccionario.CrearABB[string, string](cmpString)
 	require.False(t, abb.Pertenece(""))
-	require.PanicsWithValue(t, "La clave no pertenece al abb", func() { abb.Obtener("") })
-	require.PanicsWithValue(t, "La clave no pertenece al abb", func() { abb.Borrar("") })
+	require.PanicsWithValue(t, "La clave no pertenece al diccionario", func() { abb.Obtener("") })
+	require.PanicsWithValue(t, "La clave no pertenece al diccionario", func() { abb.Borrar("") })
 
 	abbNum := TDADiccionario.CrearABB[int, string](cmpInt)
 	require.False(t, abbNum.Pertenece(0))
-	require.PanicsWithValue(t, "La clave no pertenece al abb", func() { abbNum.Obtener(0) })
-	require.PanicsWithValue(t, "La clave no pertenece al abb", func() { abbNum.Borrar(0) })
+	require.PanicsWithValue(t, "La clave no pertenece al diccionario", func() { abbNum.Obtener(0) })
+	require.PanicsWithValue(t, "La clave no pertenece al diccionario", func() { abbNum.Borrar(0) })
 }
 
 func TestABBGuardar(t *testing.T) {
@@ -154,23 +154,23 @@ func TestABBBorrado(t *testing.T) {
 
 	require.True(t, abb.Pertenece(claves[2]))
 	require.EqualValues(t, valores[2], abb.Borrar(claves[2]))
-	require.PanicsWithValue(t, "La clave no pertenece al abb", func() { abb.Borrar(claves[2]) })
+	require.PanicsWithValue(t, "La clave no pertenece al diccionario", func() { abb.Borrar(claves[2]) })
 	require.EqualValues(t, 2, abb.Cantidad())
 	require.False(t, abb.Pertenece(claves[2]))
 
 	require.True(t, abb.Pertenece(claves[0]))
 	require.EqualValues(t, valores[0], abb.Borrar(claves[0]))
-	require.PanicsWithValue(t, "La clave no pertenece al abb", func() { abb.Borrar(claves[0]) })
+	require.PanicsWithValue(t, "La clave no pertenece al diccionario", func() { abb.Borrar(claves[0]) })
 	require.EqualValues(t, 1, abb.Cantidad())
 	require.False(t, abb.Pertenece(claves[0]))
-	require.PanicsWithValue(t, "La clave no pertenece al abb", func() { abb.Obtener(claves[0]) })
+	require.PanicsWithValue(t, "La clave no pertenece al diccionario", func() { abb.Obtener(claves[0]) })
 
 	require.True(t, abb.Pertenece(claves[1]))
 	require.EqualValues(t, valores[1], abb.Borrar(claves[1]))
-	require.PanicsWithValue(t, "La clave no pertenece al abb", func() { abb.Borrar(claves[1]) })
+	require.PanicsWithValue(t, "La clave no pertenece al diccionario", func() { abb.Borrar(claves[1]) })
 	require.EqualValues(t, 0, abb.Cantidad())
 	require.False(t, abb.Pertenece(claves[1]))
-	require.PanicsWithValue(t, "La clave no pertenece al abb", func() { abb.Obtener(claves[1]) })
+	require.PanicsWithValue(t, "La clave no pertenece al diccionario", func() { abb.Obtener(claves[1]) })
 }
 
 func TestAbbReutlizacionDeBorrados(t *testing.T) {
