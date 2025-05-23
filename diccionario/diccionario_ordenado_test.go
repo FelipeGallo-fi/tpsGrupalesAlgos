@@ -8,7 +8,7 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
-var TAMS_VOLUMEN_ORDENADO = []int{12500, 25000, 50000, 100000, 200000, 400000}
+var TAMS_VOLUMEN_ORDENADO = []int{125, 2500, 5000, 1000, 2000, 15000}
 
 func cmpString(a, b string) int {
 	if a < b {

@@ -1,5 +1,9 @@
 package diccionario
 
+import (
+	TDAPila "tdas/pila"
+)
+
 type ab[K comparable, V any] struct {
 	raiz     *nodoAb[K, V]
 	cant     int
@@ -14,11 +18,11 @@ type nodoAb[K comparable, V any] struct {
 }
 
 type iteradorExternoABB[K comparable, V any] struct {
-	pila []*nodoAb[K, V]
+	pila TDAPila.Pila[*nodoAb[K, V]]
 }
 
 type iteradorRangoABB[K comparable, V any] struct {
-	pila     []*nodoAb[K, V]
+	pila     TDAPila.Pila[*nodoAb[K, V]]
 	desde    *K
 	hasta    *K
 	comparar func(K, K) int
@@ -50,76 +54,85 @@ func (a *ab[K, V]) Cantidad() int {
 	return a.cant
 }
 
-func (a *ab[K, V]) panicPertenece(clave K) {
-	if !a.Pertenece(clave) {
-		panic("La clave no pertenece al abb")
+func obtenerMinimo[K comparable, V any](nodo *nodoAb[K, V]) *nodoAb[K, V] {
+	if nodo == nil {
+		return nil
 	}
+	actual := nodo
+	for actual.izq != nil {
+		actual = actual.izq
+	}
+	return actual
 }
 
 func (a *ab[K, V]) Borrar(clave K) V {
-	a.panicPertenece(clave)
-	var elementoBorrado V
-	a.raiz, elementoBorrado = borrarRecursiva(a.raiz, clave, a.comparar, &a.cant)
-	return elementoBorrado
-}
-
-func obtenerMinimo[K comparable, V any](nodo *nodoAb[K, V]) *nodoAb[K, V] {
-	if nodo == nil || nodo.izq == nil {
-		return nodo
+	var borrado V
+	var borradoOk bool
+	a.raiz, borrado, borradoOk = borrarRecursiva(a.raiz, clave, a.comparar, &a.cant)
+	if !borradoOk {
+		panic("La clave no pertenece al abb")
 	}
-	return obtenerMinimo(nodo.izq)
+	return borrado
 }
 
-func borrarRecursiva[K comparable, V any](nodo *nodoAb[K, V], clave K, comparar func(K, K) int, cantidad *int) (*nodoAb[K, V], V) {
+func borrarRecursiva[K comparable, V any](nodo *nodoAb[K, V], clave K, comparar func(K, K) int, cantidad *int) (*nodoAb[K, V], V, bool) {
 	if nodo == nil {
 		var cero V
-		return nil, cero
+		return nil, cero, false
 	}
 	cmp := comparar(clave, nodo.clave)
 	if cmp < 0 {
-		var elementoBorrado V
-		nodo.izq, elementoBorrado = borrarRecursiva(nodo.izq, clave, comparar, cantidad)
-		return nodo, elementoBorrado
+		var elem V
+		var ok bool
+		nodo.izq, elem, ok = borrarRecursiva(nodo.izq, clave, comparar, cantidad)
+		return nodo, elem, ok
 	} else if cmp > 0 {
-		var elementoBorrado V
-		nodo.der, elementoBorrado = borrarRecursiva(nodo.der, clave, comparar, cantidad)
-		return nodo, elementoBorrado
+		var elem V
+		var ok bool
+		nodo.der, elem, ok = borrarRecursiva(nodo.der, clave, comparar, cantidad)
+		return nodo, elem, ok
 	}
 
+	borrado := nodo.dato
 	if cantidad != nil {
 		(*cantidad)--
 	}
 
-	elementoBorrado := nodo.dato
 	if nodo.izq == nil {
-		return nodo.der, elementoBorrado
+		return nodo.der, borrado, true
 	}
 	if nodo.der == nil {
-		return nodo.izq, elementoBorrado
+		return nodo.izq, borrado, true
 	}
 
-	nuevoCandidato := obtenerMinimo(nodo.der)
-	nodo.clave, nodo.dato = nuevoCandidato.clave, nuevoCandidato.dato
-	nodo.der, _ = borrarRecursiva(nodo.der, nuevoCandidato.clave, comparar, nil)
-	return nodo, elementoBorrado
+	sucesor := obtenerMinimo(nodo.der)
+	nodo.clave = sucesor.clave
+	nodo.dato = sucesor.dato
+
+	var _ V
+	nodo.der, _, _ = borrarRecursiva(nodo.der, sucesor.clave, comparar, nil)
+
+	return nodo, borrado, true
 }
 
 func insertarYActualizar[K comparable, V any](n *nodoAb[K, V], clave K, dato V, cmp func(K, K) int) (*nodoAb[K, V], bool) {
 	if n == nil {
 		return &nodoAb[K, V]{clave: clave, dato: dato}, true
 	}
-	var creado bool
 	comp := cmp(clave, n.clave)
 	if comp < 0 {
+		var creado bool
 		n.izq, creado = insertarYActualizar(n.izq, clave, dato, cmp)
 		return n, creado
-	}
-	if comp > 0 {
+	} else if comp > 0 {
+		var creado bool
 		n.der, creado = insertarYActualizar(n.der, clave, dato, cmp)
 		return n, creado
+	} else {
+		n.dato = dato
+		return n, false
 	}
-	n.dato = dato
-	return n, false
+
 }
 
 func (a *ab[K, V]) Guardar(clave K, dato V) {
@@ -143,10 +156,11 @@ func obtenerRec[K comparable, V any](n *nodoAb[K, V], clave K, cmp func(K, K) in
 	}
 	return n
 }
-
 func (a *ab[K, V]) Obtener(clave K) V {
-	a.panicPertenece(clave)
 	n := obtenerRec(a.raiz, clave, a.comparar)
+	if n == nil {
+		panic("La clave no pertenece al abb")
+	}
 	return n.dato
 }
 
@@ -167,43 +181,47 @@ func iterarInOrder[K comparable, V any](nodo *nodoAb[K, V], f func(clave K, dato
 	return iterarInOrder(nodo.der, f)
 }
 
+//iterador externo
+
 func (a *ab[K, V]) Iterador() IterDiccionario[K, V] {
 	return nuevoIteradorExternoABB(a.raiz)
 }
 
 func nuevoIteradorExternoABB[K comparable, V any](raiz *nodoAb[K, V]) *iteradorExternoABB[K, V] {
-	it := &iteradorExternoABB[K, V]{}
+	it := &iteradorExternoABB[K, V]{pila: TDAPila.CrearPilaDinamica[*nodoAb[K, V]]()}
 	it.apilarIzquierda(raiz)
 	return it
 }
 
 func (it *iteradorExternoABB[K, V]) apilarIzquierda(n *nodoAb[K, V]) {
 	for n != nil {
-		it.pila = append(it.pila, n)
+		it.pila.Apilar(n)
 		n = n.izq
 	}
 }
 
 func (it *iteradorExternoABB[K, V]) HaySiguiente() bool {
-	return len(it.pila) > 0
-}
-
-func (it *iteradorExternoABB[K, V]) Siguiente() {
-	if !it.HaySiguiente() {
-		panic("El iterador termino de iterar")
-	}
-	nodo := it.pila[len(it.pila)-1]
-	it.pila = it.pila[:len(it.pila)-1]
-	it.apilarIzquierda(nodo.der)
+	return !it.pila.EstaVacia()
 }
 
 func (it *iteradorExternoABB[K, V]) VerActual() (K, V) {
 	if !it.HaySiguiente() {
 		panic("El iterador termino de iterar")
 	}
-	nodo := it.pila[len(it.pila)-1]
+	nodo := it.pila.VerTope()
 	return nodo.clave, nodo.dato
 }
+
+func (it *iteradorExternoABB[K, V]) Siguiente() {
+	if !it.HaySiguiente() {
+		panic("El iterador termino de iterar")
+	}
+	nodo := it.pila.Desapilar()
+	it.apilarIzquierda(nodo.der)
+
+}
+
+// iterador rango
 
 func (a *ab[K, V]) IterarRango(desde, hasta *K, visitar func(K, V) bool) {
 	iterarRangoRecursivamente(a.raiz, desde, hasta, a.comparar, visitar)
@@ -228,52 +246,48 @@ func iterarRangoRecursivamente[K comparable, V any](nodo *nodoAb[K, V], desde, h
 	return iterarRangoRecursivamente(nodo.der, desde, hasta, comparar, visitar)
 }
 
-func nuevoIteradorRangoABB[K comparable, V any](raiz *nodoAb[K, V], desde, hasta *K, cmp func(K, K) int) *iteradorRangoABB[K, V] {
-	it := &iteradorRangoABB[K, V]{desde: desde, hasta: hasta, comparar: cmp}
-	it.apilarIzquierdaRango(raiz)
+func (a *ab[K, V]) IteradorRango(desde, hasta *K) IterDiccionario[K, V] {
+	it := &iteradorRangoABB[K, V]{pila: TDAPila.CrearPilaDinamica[*nodoAb[K, V]](), desde: desde, hasta: hasta, comparar: a.comparar}
+	it.inicializarPilaRango(a.raiz)
 	return it
 }
 
-func (it *iteradorRangoABB[K, V]) apilarIzquierdaRango(n *nodoAb[K, V]) {
+func (it *iteradorRangoABB[K, V]) inicializarPilaRango(n *nodoAb[K, V]) {
 	for n != nil {
-		if it.desde == nil || it.comparar(n.clave, *it.desde) >= 0 {
-			it.pila = append(it.pila, n)
-			n = n.izq
-		} else {
+		if it.desde != nil && it.comparar(n.clave, *it.desde) < 0 {
 			n = n.der
+		} else {
+			it.pila.Apilar(n)
+			n = n.izq
 		}
 	}
 }
 
 func (it *iteradorRangoABB[K, V]) HaySiguiente() bool {
-	for len(it.pila) > 0 {
-		actual := it.pila[len(it.pila)-1]
-		if it.hasta != nil && it.comparar(actual.clave, *it.hasta) > 0 {
-			it.pila = it.pila[:len(it.pila)-1]
-		} else {
-			return true
-		}
-	}
-	return false
-}
-
-func (a *ab[K, V]) IteradorRango(desde *K, hasta *K) IterDiccionario[K, V] {
-	return nuevoIteradorRangoABB(a.raiz, desde, hasta, a.comparar)
+	return !it.pila.EstaVacia()
 }
 
 func (it *iteradorRangoABB[K, V]) VerActual() (K, V) {
 	if !it.HaySiguiente() {
-		panic("El iterador termino de iterar")
+		panic("El iterador rango terminó de iterar")
 	}
-	n := it.pila[len(it.pila)-1]
-	return n.clave, n.dato
+	nodo := it.pila.VerTope()
+	return nodo.clave, nodo.dato
 }
 
 func (it *iteradorRangoABB[K, V]) Siguiente() {
 	if !it.HaySiguiente() {
-		panic("El iterador termino de iterar")
+		panic("El iterador rango terminó de iterar")
 	}
-	n := it.pila[len(it.pila)-1]
-	it.pila = it.pila[:len(it.pila)-1]
-	it.apilarIzquierdaRango(n.der)
+	nodo := it.pila.Desapilar()
+
+	nodoActual := nodo.der
+	for nodoActual != nil {
+		if it.hasta != nil && it.comparar(nodoActual.clave, *it.hasta) > 0 {
+			nodoActual = nodoActual.izq
+		} else {
+			it.pila.Apilar(nodoActual)
+			nodoActual = nodoActual.izq
+		}
+	}
 }
