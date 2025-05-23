@@ -70,7 +70,7 @@ func (a *ab[K, V]) Borrar(clave K) V {
 	var borradoOk bool
 	a.raiz, borrado, borradoOk = borrarRecursiva(a.raiz, clave, a.comparar, &a.cant)
 	if !borradoOk {
-		panic("La clave no pertenece al abb")
+		panic("La clave no pertenece al diccionario")
 	}
 	return borrado
 }
@@ -159,7 +159,7 @@ func obtenerRec[K comparable, V any](n *nodoAb[K, V], clave K, cmp func(K, K) in
 func (a *ab[K, V]) Obtener(clave K) V {
 	n := obtenerRec(a.raiz, clave, a.comparar)
 	if n == nil {
-		panic("La clave no pertenece al abb")
+		panic("La clave no pertenece al diccionario")
 	}
 	return n.dato
 }
@@ -256,20 +256,21 @@ func (it *iteradorRangoABB[K, V]) inicializarPilaRango(n *nodoAb[K, V]) {
 	for n != nil {
 		if it.desde != nil && it.comparar(n.clave, *it.desde) < 0 {
 			n = n.der
+		} else if it.hasta != nil && it.comparar(n.clave, *it.hasta) > 0 {
+			n = n.izq
 		} else {
 			it.pila.Apilar(n)
 			n = n.izq
 		}
 	}
 }
-
 func (it *iteradorRangoABB[K, V]) HaySiguiente() bool {
 	return !it.pila.EstaVacia()
 }
 
 func (it *iteradorRangoABB[K, V]) VerActual() (K, V) {
 	if !it.HaySiguiente() {
-		panic("El iterador rango terminó de iterar")
+		panic("El iterador termino de iterar")
 	}
 	nodo := it.pila.VerTope()
 	return nodo.clave, nodo.dato
@@ -277,7 +278,7 @@ func (it *iteradorRangoABB[K, V]) VerActual() (K, V) {
 
 func (it *iteradorRangoABB[K, V]) Siguiente() {
 	if !it.HaySiguiente() {
-		panic("El iterador rango terminó de iterar")
+		panic("El iterador termino de iterar")
 	}
 	nodo := it.pila.Desapilar()
 
