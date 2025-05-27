@@ -27,6 +27,7 @@ type iteradorABB[K comparable, V any] struct {
 func CrearABB[K comparable, V any](funcion_cmp func(K, K) int) DiccionarioOrdenado[K, V] {
 	return &aBB[K, V]{raiz: nil, cant: 0, comparar: funcion_cmp}
 }
+
 func buscarNodo[K comparable, V any](n *nodoAb[K, V], clave K, comparar func(K, K) int) *nodoAb[K, V] {
 	for n != nil {
 		cmp := comparar(clave, n.clave)
