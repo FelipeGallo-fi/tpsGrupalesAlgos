@@ -28,22 +28,22 @@ func CrearABB[K comparable, V any](funcion_cmp func(K, K) int) DiccionarioOrdena
 	return &aBB[K, V]{raiz: nil, cant: 0, comparar: funcion_cmp}
 }
 
-func buscarNodo[K comparable, V any](n *nodoAb[K, V], clave K, comparar func(K, K) int) *nodoAb[K, V] {
-	for n != nil {
-		cmp := comparar(clave, n.clave)
-		if cmp == 0 {
-			return n
-		} else if cmp < 0 {
-			n = n.izq
-		} else {
-			n = n.der
-		}
+func buscarNodoRec[K comparable, V any](n *nodoAb[K, V], clave K, comparar func(K, K) int) *nodoAb[K, V] {
+	if n == nil {
+		return nil
 	}
-	return nil
+	cmp := comparar(clave, n.clave)
+	if cmp == 0 {
+		return n
+	} else if cmp < 0 {
+		return buscarNodoRec(n.izq, clave, comparar)
+	} else {
+		return buscarNodoRec(n.der, clave, comparar)
+	}
 }
 
 func (a *aBB[K, V]) Pertenece(clave K) bool {
-	return buscarNodo(a.raiz, clave, a.comparar) != nil
+	return buscarNodoRec(a.raiz, clave, a.comparar) != nil
 }
 
 func (a *aBB[K, V]) Cantidad() int {
@@ -138,22 +138,8 @@ func (a *aBB[K, V]) Guardar(clave K, dato V) {
 	}
 }
 
-func obtenerRec[K comparable, V any](n *nodoAb[K, V], clave K, cmp func(K, K) int) *nodoAb[K, V] {
-	if n == nil {
-		return nil
-	}
-	comp := cmp(clave, n.clave)
-	if comp < 0 {
-		return obtenerRec(n.izq, clave, cmp)
-	}
-	if comp > 0 {
-		return obtenerRec(n.der, clave, cmp)
-	}
-	return n
-}
-
 func (a *aBB[K, V]) Obtener(clave K) V {
-	n := obtenerRec(a.raiz, clave, a.comparar)
+	n := buscarNodoRec(a.raiz, clave, a.comparar)
 	if n == nil {
 		panic("La clave no pertenece al diccionario")
 	}
@@ -179,33 +165,20 @@ func iterarInOrder[K comparable, V any](nodo *nodoAb[K, V], f func(clave K, dato
 
 // iterador externo
 func (a *aBB[K, V]) Iterador() IterDiccionario[K, V] {
-	return nuevoIteradorExternoABB(a.raiz)
+	return a.IteradorRango(nil, nil)
 }
 
 func (a *aBB[K, V]) IteradorRango(desde, hasta *K) IterDiccionario[K, V] {
 	return nuevoIteradorRangoABB(a.raiz, desde, hasta, a.comparar)
 }
 
-func nuevoIteradorExternoABB[K comparable, V any](raiz *nodoAb[K, V]) *iteradorABB[K, V] {
-	it := &iteradorABB[K, V]{pila: TDAPila.CrearPilaDinamica[*nodoAb[K, V]](), desde: nil, hasta: nil, comparar: nil}
-	it.apilarIzquierda(raiz)
-	return it
-}
-
 func nuevoIteradorRangoABB[K comparable, V any](raiz *nodoAb[K, V], desde, hasta *K, comparar func(K, K) int) *iteradorABB[K, V] {
 	it := &iteradorABB[K, V]{pila: TDAPila.CrearPilaDinamica[*nodoAb[K, V]](), desde: desde, hasta: hasta, comparar: comparar}
-	it.apilarRango(raiz)
+	it.apilarNodos(raiz)
 	return it
 }
 
-func (it *iteradorABB[K, V]) apilarIzquierda(n *nodoAb[K, V]) {
-	for n != nil {
-		it.pila.Apilar(n)
-		n = n.izq
-	}
-}
-
-func (it *iteradorABB[K, V]) apilarRango(n *nodoAb[K, V]) {
+func (it *iteradorABB[K, V]) apilarNodos(n *nodoAb[K, V]) {
 	for n != nil {
 		if it.desde != nil && it.comparar(n.clave, *it.desde) < 0 {
 			n = n.der
@@ -235,18 +208,7 @@ func (it *iteradorABB[K, V]) Siguiente() {
 		panic("El iterador termino de iterar")
 	}
 	nodo := it.pila.Desapilar()
-	actual := nodo.der
-
-	for actual != nil {
-		if it.desde != nil && it.comparar(actual.clave, *it.desde) < 0 {
-			actual = actual.der
-		} else if it.hasta != nil && it.comparar(actual.clave, *it.hasta) > 0 {
-			actual = actual.izq
-		} else {
-			it.pila.Apilar(actual)
-			actual = actual.izq
-		}
-	}
+	it.apilarNodos(nodo.der)
 }
 
 func iterarRangoRec[K comparable, V any](n *nodoAb[K, V], desde, hasta *K, comparar func(K, K) int, visitar func(clave K, dato V) bool) bool {
