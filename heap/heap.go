@@ -20,7 +20,7 @@ func CrearHeap[T any](funcion_cmp func(T, T) int) ColaPrioridad[T] {
 	}
 }
 
-func CrearHeapArr[T any](arreglo []T, funcion_cmp func(T, T) int) *heap[T] {
+func CrearHeapArr[T any](arreglo []T, funcion_cmp func(T, T) int) ColaPrioridad[T] {
 	capacidad := len(arreglo) * _FACTOR_REDIMENSION_AGRANDAR
 	if capacidad < _MINIMA_CAPACIDAD {
 		capacidad = _MINIMA_CAPACIDAD
@@ -31,27 +31,35 @@ func CrearHeapArr[T any](arreglo []T, funcion_cmp func(T, T) int) *heap[T] {
 		funcion_cmp: funcion_cmp,
 	}
 	copy(h.datos, arreglo)
-	for i := len(arreglo)/2 - 1; i >= 0; i-- {
-		h.downHeap(i)
-	}
+	heapify(h.datos, h.cantidad, funcion_cmp)
 	return h
 }
 
-func (h *heap[T]) downHeap(indice int) {
+func heapify[T any](datos []T, cantidad int, funcion_cmp func(T, T) int) {
+	for i := cantidad/2 - 1; i >= 0; i-- {
+		downHeapAux(datos, cantidad, i, funcion_cmp)
+	}
+}
+
+func downHeapAux[T any](datos []T, cantidad int, indice int, funcion_cmp func(T, T) int) {
 	hijoIzq := 2*indice + 1
 	hijoDer := 2*indice + 2
 	mayor := indice
 
-	if hijoIzq < h.cantidad && h.funcion_cmp(h.datos[hijoIzq], h.datos[mayor]) > 0 {
+	if hijoIzq < cantidad && funcion_cmp(datos[hijoIzq], datos[mayor]) > 0 {
 		mayor = hijoIzq
 	}
-	if hijoDer < h.cantidad && h.funcion_cmp(h.datos[hijoDer], h.datos[mayor]) > 0 {
+	if hijoDer < cantidad && funcion_cmp(datos[hijoDer], datos[mayor]) > 0 {
 		mayor = hijoDer
 	}
 	if mayor != indice {
-		h.intercambiar(indice, mayor)
-		h.downHeap(mayor)
+		datos[indice], datos[mayor] = datos[mayor], datos[indice]
+		downHeapAux(datos, cantidad, mayor, funcion_cmp)
 	}
+}
+
+func (h *heap[T]) downHeap(indice int) {
+	downHeapAux(h.datos, h.cantidad, indice, h.funcion_cmp)
 }
 
 func (h *heap[T]) upHeap(indice int) {
@@ -75,27 +83,14 @@ func (h *heap[T]) redimensionar(nuevaCapacidad int) {
 	h.datos = nuevos
 }
 
-func (h *heap[T]) ordenar() {
-	original := h.cantidad
-	for i := h.cantidad/2 - 1; i >= 0; i-- {
-		h.downHeap(i)
-	}
-	for i := h.cantidad - 1; i > 0; i-- {
-		h.intercambiar(0, i)
-		h.cantidad--
-		h.downHeap(0)
-	}
-	h.cantidad = original
-}
-
 func HeapSort[T any](elementos []T, funcion_cmp func(T, T) int) {
-	copia := make([]T, len(elementos))
-	copy(copia, elementos)
-	h := CrearHeapArr(copia, funcion_cmp)
-	h.ordenar()
-	copy(elementos, h.datos[:h.cantidad])
-}
+	heapify(elementos, len(elementos), funcion_cmp)
 
+	for i := len(elementos) - 1; i > 0; i-- {
+		elementos[0], elementos[i] = elementos[i], elementos[0]
+		downHeapAux(elementos, i, 0, funcion_cmp)
+	}
+}
 func (h *heap[T]) EstaVacia() bool {
 	return h.cantidad == 0
 }
@@ -130,6 +125,11 @@ func (h *heap[T]) Desencolar() T {
 		h.datos[0] = h.datos[h.cantidad]
 		h.downHeap(0)
 	}
+
+	if h.cantidad > 0 && h.cantidad <= len(h.datos)/4 && len(h.datos)/2 >= _MINIMA_CAPACIDAD {
+		h.redimensionar(len(h.datos) / 2)
+	}
+
 	return max
 }
 
