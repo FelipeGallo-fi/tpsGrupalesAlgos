@@ -2,13 +2,13 @@ package diccionario_test
 
 import (
 	"fmt"
-	TDADiccionario "tdas/tpsGrupalesAlgos/diccionarios"
+	TDADiccionario "tdas/tpsGrupalesAlgos/diccionario"
 	"testing"
 
 	"github.com/stretchr/testify/require"
 )
 
-var TAMS_VOLUMEN_ORDENADO = []int{125, 2500, 5000, 1000, 2000, 15000}
+var TAMS_VOLUMEN_ORDENADO = []int{125, 2500, 5000, 7500, 10000, 15000}
 
 func cmpString(a, b string) int {
 	if a < b {

@@ -28,122 +28,107 @@ func CrearABB[K comparable, V any](funcion_cmp func(K, K) int) DiccionarioOrdena
 	return &aBB[K, V]{raiz: nil, cant: 0, comparar: funcion_cmp}
 }
 
-func buscarNodoRec[K comparable, V any](n *nodoAb[K, V], clave K, comparar func(K, K) int) *nodoAb[K, V] {
-	if n == nil {
-		return nil
+func buscarClave[K comparable, V any](raiz *nodoAb[K, V], clave K, comparar func(K, K) int) (padre *nodoAb[K, V], nodo *nodoAb[K, V]) {
+	actual := raiz
+	var padreAux *nodoAb[K, V]
+
+	for actual != nil {
+		cmp := comparar(clave, actual.clave)
+		if cmp == 0 {
+			return padreAux, actual
+		} else if cmp < 0 {
+			padreAux = actual
+			actual = actual.izq
+		} else {
+			padreAux = actual
+			actual = actual.der
+		}
 	}
-	cmp := comparar(clave, n.clave)
-	if cmp == 0 {
-		return n
-	} else if cmp < 0 {
-		return buscarNodoRec(n.izq, clave, comparar)
-	} else {
-		return buscarNodoRec(n.der, clave, comparar)
-	}
+	return padreAux, nil
 }
 
 func (a *aBB[K, V]) Pertenece(clave K) bool {
-	return buscarNodoRec(a.raiz, clave, a.comparar) != nil
+	_, nodo := buscarClave(a.raiz, clave, a.comparar)
+	return nodo != nil
 }
 
 func (a *aBB[K, V]) Cantidad() int {
 	return a.cant
 }
 
-func obtenerMinimo[K comparable, V any](nodo *nodoAb[K, V]) *nodoAb[K, V] {
-	if nodo == nil {
-		return nil
-	}
-	actual := nodo
-	for actual.izq != nil {
-		actual = actual.izq
-	}
-	return actual
-}
-
 func (a *aBB[K, V]) Borrar(clave K) V {
-	var borrado V
-	var borradoOk bool
-	a.raiz, borrado, borradoOk = borrarRecursiva(a.raiz, clave, a.comparar, &a.cant)
-	if !borradoOk {
+	padre, nodo := buscarClave(a.raiz, clave, a.comparar)
+	if nodo == nil {
 		panic("La clave no pertenece al diccionario")
 	}
+	borrado := nodo.dato
+
+	if nodo.izq == nil {
+		a.reemplazarEnPadre(padre, nodo, nodo.der)
+		a.cant--
+		return borrado
+	}
+
+	if nodo.der == nil {
+		a.reemplazarEnPadre(padre, nodo, nodo.izq)
+		a.cant--
+		return borrado
+	}
+	sucesorPadre := nodo
+	sucesor := nodo.der
+	for sucesor.izq != nil {
+		sucesorPadre = sucesor
+		sucesor = sucesor.izq
+	}
+	nodo.clave = sucesor.clave
+	nodo.dato = sucesor.dato
+	a.reemplazarEnPadre(sucesorPadre, sucesor, sucesor.der)
+	a.cant--
 	return borrado
 }
 
-func borrarRecursiva[K comparable, V any](nodo *nodoAb[K, V], clave K, comparar func(K, K) int, cantidad *int) (*nodoAb[K, V], V, bool) {
-	if nodo == nil {
-		var cero V
-		return nil, cero, false
-	}
-	cmp := comparar(clave, nodo.clave)
-	if cmp < 0 {
-		var elem V
-		var ok bool
-		nodo.izq, elem, ok = borrarRecursiva(nodo.izq, clave, comparar, cantidad)
-		return nodo, elem, ok
-	} else if cmp > 0 {
-		var elem V
-		var ok bool
-		nodo.der, elem, ok = borrarRecursiva(nodo.der, clave, comparar, cantidad)
-		return nodo, elem, ok
-	}
-
-	borrado := nodo.dato
-	if cantidad != nil {
-		(*cantidad)--
-	}
-
-	if nodo.izq == nil {
-		return nodo.der, borrado, true
-	}
-	if nodo.der == nil {
-		return nodo.izq, borrado, true
-	}
-
-	sucesor := obtenerMinimo(nodo.der)
-	nodo.clave = sucesor.clave
-	nodo.dato = sucesor.dato
-
-	var _ V
-	nodo.der, _, _ = borrarRecursiva(nodo.der, sucesor.clave, comparar, nil)
-
-	return nodo, borrado, true
-}
-
-func insertarYActualizar[K comparable, V any](n *nodoAb[K, V], clave K, dato V, cmp func(K, K) int) (*nodoAb[K, V], bool) {
-	if n == nil {
-		return &nodoAb[K, V]{clave: clave, dato: dato}, true
-	}
-	comp := cmp(clave, n.clave)
-	if comp < 0 {
-		var creado bool
-		n.izq, creado = insertarYActualizar(n.izq, clave, dato, cmp)
-		return n, creado
-	} else if comp > 0 {
-		var creado bool
-		n.der, creado = insertarYActualizar(n.der, clave, dato, cmp)
-		return n, creado
+func (a *aBB[K, V]) reemplazarEnPadre(padre, nodo, nuevo *nodoAb[K, V]) {
+	if padre == nil {
+		a.raiz = nuevo
+	} else if padre.izq == nodo {
+		padre.izq = nuevo
 	} else {
-		n.dato = dato
-		return n, false
+		padre.der = nuevo
 	}
 }
 
 func (a *aBB[K, V]) Guardar(clave K, dato V) {
-	creado := false
-	a.raiz, creado = insertarYActualizar(a.raiz, clave, dato, a.comparar)
-	if creado {
+	if a.raiz == nil {
+		a.raiz = &nodoAb[K, V]{clave: clave, dato: dato}
 		a.cant++
+		return
 	}
+	padre, nodo := buscarClave(a.raiz, clave, a.comparar)
+	if nodo != nil {
+		nodo.dato = dato
+		return
+	}
+	nuevo := &nodoAb[K, V]{clave: clave, dato: dato}
+	if padre == nil {
+		a.raiz = nuevo
+	} else {
+		cmp := a.comparar(clave, padre.clave)
+		if cmp < 0 {
+			padre.izq = nuevo
+		} else {
+			padre.der = nuevo
+		}
+	}
+
+	a.cant++
 }
 
 func (a *aBB[K, V]) Obtener(clave K) V {
-	n := buscarNodoRec(a.raiz, clave, a.comparar)
-	if n == nil {
+	_, nodo := buscarClave(a.raiz, clave, a.comparar)
+	if nodo == nil {
 		panic("La clave no pertenece al diccionario")
 	}
-	return n.dato
+	return nodo.dato
 }
 
 func (a *aBB[K, V]) Iterar(visitar func(clave K, dato V) bool) {
