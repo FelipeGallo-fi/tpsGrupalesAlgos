@@ -40,7 +40,7 @@ type iterDiccionarioImplementacion[K comparable, V any] struct {
 
 func CrearHash[K comparable, V any]() Diccionario[K, V] {
 	d := &diccionarioHash[K, V]{}
-	d.inicializarTabla(_CAPACIDAD_MINIMA)
+	d.crearTablaVacia(_CAPACIDAD_MINIMA)
 	return d
 }
 
@@ -54,14 +54,7 @@ func (d *diccionarioHash[K, V]) crearTablaVacia(capacidad int) {
 	d.borrados = 0
 }
 
-func (d *diccionarioHash[K, V]) inicializarTabla(capacidad int) {
-	if capacidad < _CAPACIDAD_MINIMA {
-		capacidad = _CAPACIDAD_MINIMA
-	}
-	d.crearTablaVacia(capacidad)
-}
-
-func (d *diccionarioHash[K, V]) buscarPos(clave K) (pos int, estado estadoCelda) {
+func (d *diccionarioHash[K, V]) buscarPos(clave K) (pos int, esta bool) {
 	pos = hash(clave, d.capacidad)
 	primerBorrado := -1
 
@@ -70,9 +63,9 @@ func (d *diccionarioHash[K, V]) buscarPos(clave K) (pos int, estado estadoCelda)
 
 		if elem.estado == _VACIA {
 			if primerBorrado != -1 {
-				return primerBorrado, _BORRADA
+				return primerBorrado, false
 			}
-			return pos, _VACIA
+			return pos, false
 		}
 
 		if elem.estado == _BORRADA {
@@ -80,19 +73,21 @@ func (d *diccionarioHash[K, V]) buscarPos(clave K) (pos int, estado estadoCelda)
 				primerBorrado = pos
 			}
 		} else if elem.estado == _OCUPADA && elem.clave == clave {
-			return pos, _OCUPADA
+			return pos, true
 		}
 
 		pos = (pos + 1) % d.capacidad
 	}
 }
+
 func (d *diccionarioHash[K, V]) Guardar(clave K, valor V) {
+
 	if float64(d.cantidad+d.borrados+1)/float64(d.capacidad) > _CARGA_MAX {
 		d.redimensionar(d.capacidad * _REDIMENSION)
 	}
 
-	posicion, estado := d.buscarPos(clave)
-	if estado == _OCUPADA {
+	posicion, encontada := d.buscarPos(clave)
+	if encontada {
 		d.tabla[posicion].valor = valor
 		return
 	}
@@ -102,13 +97,19 @@ func (d *diccionarioHash[K, V]) Guardar(clave K, valor V) {
 }
 
 func (d *diccionarioHash[K, V]) Pertenece(clave K) bool {
-	_, estado := d.buscarPos(clave)
-	return estado == _OCUPADA
+	if d.capacidad == 0 {
+		return false
+	}
+	_, esta := d.buscarPos(clave)
+	return esta
 }
 
 func (d *diccionarioHash[K, V]) Obtener(clave K) V {
-	posicion, estado := d.buscarPos(clave)
-	if estado != _OCUPADA {
+	if d.capacidad == 0 {
+		panic("La clave no pertenece al diccionario")
+	}
+	posicion, esta := d.buscarPos(clave)
+	if !esta {
 		panic("La clave no pertenece al diccionario")
 	}
 	return d.tabla[posicion].valor
@@ -116,9 +117,13 @@ func (d *diccionarioHash[K, V]) Obtener(clave K) V {
 }
 
 func (d *diccionarioHash[K, V]) Borrar(clave K) V {
-	posicion, estado := d.buscarPos(clave)
+	if d.capacidad == 0 {
+		panic("La clave no pertenece al diccionario")
+	}
 
-	if estado != _OCUPADA {
+	posicion, esta := d.buscarPos(clave)
+
+	if !esta {
 		panic("La clave no pertenece al diccionario")
 	}
 
@@ -128,14 +133,18 @@ func (d *diccionarioHash[K, V]) Borrar(clave K) V {
 	d.borrados++
 
 	if d.cantidad == 0 {
-		d.inicializarTabla(_CAPACIDAD_MINIMA)
+		d.crearTablaVacia(_CAPACIDAD_MINIMA)
 		d.borrados = 0
-	} else if float64(d.cantidad+d.borrados)/float64(d.capacidad) < _REDUCCION && d.capacidad > _CAPACIDAD_MINIMA {
-		nuevaCapacidad := max(d.capacidad/_REDIMENSION, _CAPACIDAD_MINIMA)
+	} else if float64(d.cantidad)/float64(d.capacidad) < _REDUCCION && d.capacidad > _CAPACIDAD_MINIMA {
+		nuevaCapacidad := d.capacidad / _REDIMENSION
+		if nuevaCapacidad < _CAPACIDAD_MINIMA {
+			nuevaCapacidad = _CAPACIDAD_MINIMA
+		}
 		d.redimensionar(nuevaCapacidad)
 	}
 
 	return valor
+
 }
 
 func (d *diccionarioHash[K, V]) Cantidad() int {
@@ -157,7 +166,7 @@ func (d *diccionarioHash[K, V]) Iterar(f func(clave K, dato V) bool) {
 
 ///funcion Iterador externo
 
-func (d *diccionarioHash[K, V]) proximaPosicionOcupada(pos int) int {
+func (d *diccionarioHash[K, V]) posicionOpcupadaDesde(pos int) int {
 	for pos < len(d.tabla) && d.tabla[pos].estado != _OCUPADA {
 		pos++
 	}
@@ -165,10 +174,10 @@ func (d *diccionarioHash[K, V]) proximaPosicionOcupada(pos int) int {
 }
 
 func (d *diccionarioHash[K, V]) Iterador() IterDiccionario[K, V] {
-	posicionInicial := d.proximaPosicionOcupada(0)
+	posicionOpcupada := d.posicionOpcupadaDesde(0)
 	return &iterDiccionarioImplementacion[K, V]{
 		diccionario: d,
-		posicion:    posicionInicial,
+		posicion:    posicionOpcupada,
 	}
 }
 
@@ -181,8 +190,10 @@ func (i *iterDiccionarioImplementacion[K, V]) panicVacia() {
 }
 
 func (i *iterDiccionarioImplementacion[K, V]) HaySiguiente() bool {
-	proximo := i.diccionario.proximaPosicionOcupada(i.posicion)
+
+	proximo := i.diccionario.posicionOpcupadaDesde(i.posicion)
 	return proximo < len(i.diccionario.tabla)
+
 }
 
 func (i *iterDiccionarioImplementacion[K, V]) VerActual() (K, V) {
@@ -192,7 +203,8 @@ func (i *iterDiccionarioImplementacion[K, V]) VerActual() (K, V) {
 
 func (i *iterDiccionarioImplementacion[K, V]) Siguiente() {
 	i.panicVacia()
-	i.posicion = i.diccionario.proximaPosicionOcupada(i.posicion + 1)
+	i.posicion = i.diccionario.posicionOpcupadaDesde(i.posicion + 1)
+
 }
 
 func hash[K comparable](clave K, capacidad int) int {
@@ -220,6 +232,4 @@ func (d *diccionarioHash[K, V]) redimensionar(nuevaCapacidad int) {
 			d.Guardar(elem.clave, elem.valor)
 		}
 	}
-
-	d.borrados = 0
 }
