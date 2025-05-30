@@ -1,6 +1,7 @@
 package cola_prioridad_test
 
 import (
+	"fmt"
 	TDAHeap "tdas/tpsGrupalesAlgos/heap"
 	"testing"
 
@@ -9,10 +10,12 @@ import (
 const (
 	_DESCENDENTE = 0
 	_ASCENDENTE = 1
+	_VOLUMEN = 100000
 	
 )
 
 var _VECTOR_DE_PRIORIDADES_ = []int{1,2,3,3,7,23,34,60,100,2300,22,99,34,69,34,4}  
+var _TAMS_VOLUMEN_ORDENADO = []int{10, 100, 10000, 1000000}
 
 
 func cmpMaxHeap(a,b int) int {
@@ -83,10 +86,101 @@ func TestHeapVacio(t *testing.T){
 
 	require.True(t,h.EstaVacia())
 
-	require.Equal(t,0,h.Cantidad(),"La cantidad deberia estar vacio el heap al crearse")
+	require.Equal(t,0,h.Cantidad(),"La cantidad deberia estar vacio el crear un heap")
 
 	require.Panics(t, func() { h.VerMax() }, "VerMax en un heap  recien creada deberia panickear")
 	require.Panics(t, func() { h.Desencolar() }, "Desencolar en un heap  recien creada deberia panickear")
+
+}
+
+
+func TestBorrado(t *testing.T){
+	h := TDAHeap.CrearHeap(cmpMaxHeap)
+
+	for i:= 0; i < 23 ; i++{
+		h.Encolar(i)
+	}
+	
+	require.Equal(t,22,h.VerMax(),"El maximo de mi heap tendria que ser 22")
+
+
+	for !h.EstaVacia(){
+		 i:= h.Cantidad() -1 
+		 
+		 elemento := h.Desencolar()
+		 require.Equal(t,i,elemento,"El elemento desencolado deberia ser igual que %d",i)
+	}
+
+	require.True(t,h.EstaVacia(),"El heap deberia estar vacio")
+
+
+
+	// pruebo tambien que una vez que se vacio por completo un heap puedo volver a usarlo
+
+	
+	h.Encolar(13)
+	h.Encolar(1)
+	require.Equal(t,13,h.VerMax(),"El elemento maximo deberia de ser 13")
+	h.Desencolar()
+	require.Equal(t,1,h.VerMax(),"El elemento maximo deberia de ser 1")
+	h.Desencolar()
+	require.True(t,h.EstaVacia(),"El heap deberia estar vacio")
+
+
+	
+	
+
+}
+
+
+func BenchmarkElementosIguales(b *testing.B){
+	h:= TDAHeap.CrearHeap(cmpMaxHeap)
+
+	for i:= 0 ; i < _VOLUMEN ; i++{
+		h.Encolar(112694)
+	}
+
+	for !h.EstaVacia(){
+		require.Equal(b,112694,h.VerMax(),"El maximo deberia de ser 112694")
+		require.Equal(b,112694,h.Desencolar(),"El elemento desencolado deberia de ser 112694")
+	}
+}
+
+
+
+func BenchmarkColaOrdenada(b *testing.B){
+
+
+	for _, n := range _TAMS_VOLUMEN_ORDENADO {
+		b.Run(fmt.Sprintf("Prueba %d elementos", n), func(b *testing.B) {
+			for i := 0; i < b.N; i++ {
+				h := TDAHeap.CrearHeap(cmpMaxHeap)
+				for j := 0; j < n; j++ {
+					h.Encolar(j) 
+				}
+			}
+		})
+	}
+}
+
+
+
+
+
+
+
+
+
+//Test de arrays  
+func TestCrearHeapConArraynil(t *testing.T){
+	h := TDAHeap.CrearHeapArr([]int{},cmpMaxHeap)
+
+	require.True(t,h.EstaVacia(),"El heap deberia de estar vacio")
+	require.Equal(t,0,h.Cantidad(),"La cantida tiene que ser 0")
+	
+	require.Panics(t, func() { h.VerMax() }, "VerMax en un heap  recien creada deberia panickear")
+	require.Panics(t, func() { h.Desencolar() }, "Desencolar en un heap  recien creada deberia panickear")
+
 
 }
 
@@ -156,16 +250,4 @@ func TestCrearHeapConArrayMin(t *testing.T){
 
 }
 
-
-func TestCrearHeapConArraynil(t *testing.T){
-	h := TDAHeap.CrearHeapArr([]int{},cmpMaxHeap)
-
-	require.True(t,h.EstaVacia(),"El heap deberia de estar vacio")
-	require.Equal(t,0,h.Cantidad(),"La cantida tiene que ser 0")
-	
-	require.Panics(t, func() { h.VerMax() }, "VerMax en un heap  recien creada deberia panickear")
-	require.Panics(t, func() { h.Desencolar() }, "Desencolar en un heap  recien creada deberia panickear")
-
-
-}
 

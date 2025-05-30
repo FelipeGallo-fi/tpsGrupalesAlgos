@@ -83,7 +83,7 @@ func (h *heap[T]) redimensionar(nuevaCapacidad int) {
 	h.datos = nuevos
 }
 
-func HeapSort[T any](elementos []T, funcion_cmp func(T, T) int) {
+func heapSort[T any](elementos []T, funcion_cmp func(T, T) int) {
 	heapify(elementos, len(elementos), funcion_cmp)
 
 	for i := len(elementos) - 1; i > 0; i-- {
