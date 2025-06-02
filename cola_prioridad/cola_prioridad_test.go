@@ -3,7 +3,7 @@ package cola_prioridad_test
 import (
 	"fmt"
 	"math/rand"
-	TDAHeap "tdas/tpsGrupalesAlgos/cola_prioridad"
+	TDAHeap "tdas/cola_prioridad"
 	"testing"
 
 	"github.com/stretchr/testify/require"
