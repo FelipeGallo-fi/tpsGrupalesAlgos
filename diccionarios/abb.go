@@ -63,17 +63,27 @@ func (a *aBB[K, V]) Borrar(clave K) V {
 	}
 	borrado := nodo.dato
 
-	if nodo.izq == nil {
-		a.reemplazarEnPadre(padre, nodo, nodo.der)
-		a.cant--
-		return borrado
+	if nodo.izq == nil || nodo.der == nil {
+		a.borrarNodoConUnHijo(padre, nodo)
+	} else {
+		a.borrarNodoConDosHijos(nodo)
 	}
 
-	if nodo.der == nil {
-		a.reemplazarEnPadre(padre, nodo, nodo.izq)
-		a.cant--
-		return borrado
+	a.cant--
+	return borrado
+}
+
+func (a *aBB[K, V]) borrarNodoConUnHijo(padre, nodo *nodoAb[K, V]) {
+	var hijo *nodoAb[K, V]
+	if nodo.izq != nil {
+		hijo = nodo.izq
+	} else {
+		hijo = nodo.der
 	}
+	a.reemplazarEnPadre(padre, nodo, hijo)
+}
+
+func (a *aBB[K, V]) borrarNodoConDosHijos(nodo *nodoAb[K, V]) {
 	sucesorPadre := nodo
 	sucesor := nodo.der
 	for sucesor.izq != nil {
@@ -83,8 +93,6 @@ func (a *aBB[K, V]) Borrar(clave K) V {
 	nodo.clave = sucesor.clave
 	nodo.dato = sucesor.dato
 	a.reemplazarEnPadre(sucesorPadre, sucesor, sucesor.der)
-	a.cant--
-	return borrado
 }
 
 func (a *aBB[K, V]) reemplazarEnPadre(padre, nodo, nuevo *nodoAb[K, V]) {
@@ -103,23 +111,15 @@ func (a *aBB[K, V]) Guardar(clave K, dato V) {
 		a.cant++
 		return
 	}
+
 	padre, nodo := buscarClave(a.raiz, clave, a.comparar)
 	if nodo != nil {
 		nodo.dato = dato
 		return
 	}
-	nuevo := &nodoAb[K, V]{clave: clave, dato: dato}
-	if padre == nil {
-		a.raiz = nuevo
-	} else {
-		cmp := a.comparar(clave, padre.clave)
-		if cmp < 0 {
-			padre.izq = nuevo
-		} else {
-			padre.der = nuevo
-		}
-	}
 
+	nuevo := &nodoAb[K, V]{clave: clave, dato: dato}
+	a.reemplazarEnPadre(padre, nil, nuevo)
 	a.cant++
 }
 
@@ -132,20 +132,7 @@ func (a *aBB[K, V]) Obtener(clave K) V {
 }
 
 func (a *aBB[K, V]) Iterar(visitar func(clave K, dato V) bool) {
-	iterarInOrder(a.raiz, visitar)
-}
-
-func iterarInOrder[K comparable, V any](nodo *nodoAb[K, V], f func(clave K, dato V) bool) bool {
-	if nodo == nil {
-		return true
-	}
-	if !iterarInOrder(nodo.izq, f) {
-		return false
-	}
-	if !f(nodo.clave, nodo.dato) {
-		return false
-	}
-	return iterarInOrder(nodo.der, f)
+	iterarRangoRec(a.raiz, nil, nil, a.comparar, visitar)
 }
 
 // iterador externo

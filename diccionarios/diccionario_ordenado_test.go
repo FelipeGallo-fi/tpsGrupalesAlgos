@@ -2,6 +2,7 @@ package diccionario_test
 
 import (
 	"fmt"
+	"math/rand"
 	TDADiccionario "tdas/tpsGrupalesAlgos/diccionario"
 	"testing"
 
@@ -173,6 +174,53 @@ func TestABBBorrado(t *testing.T) {
 	require.PanicsWithValue(t, "La clave no pertenece al diccionario", func() { abb.Obtener(claves[1]) })
 }
 
+func borradoNodoSinHijos(t *testing.T, abb TDADiccionario.DiccionarioOrdenado[int, string], clave int, valor string) {
+	abb.Guardar(clave, valor)
+	require.True(t, abb.Pertenece(clave))
+	require.EqualValues(t, valor, abb.Borrar(clave))
+	require.False(t, abb.Pertenece(clave))
+	require.EqualValues(t, 0, abb.Cantidad())
+}
+
+func borradoNodoConUnHijo(t *testing.T, abb TDADiccionario.DiccionarioOrdenado[int, string], clavePadre, claveHijo int, valorPadre, valorHijo string) {
+	abb.Guardar(clavePadre, valorPadre)
+	abb.Guardar(claveHijo, valorHijo)
+	require.True(t, abb.Pertenece(clavePadre))
+	require.EqualValues(t, valorPadre, abb.Borrar(clavePadre))
+	require.False(t, abb.Pertenece(clavePadre))
+	require.True(t, abb.Pertenece(claveHijo))
+	require.EqualValues(t, 1, abb.Cantidad())
+}
+
+func borradoNodoConDosHijos(t *testing.T, abb TDADiccionario.DiccionarioOrdenado[int, string], clavePadre, claveIzq, claveDer int, valorPadre, valorIzq, valorDer string) {
+	abb.Guardar(clavePadre, valorPadre)
+	abb.Guardar(claveIzq, valorIzq)
+	abb.Guardar(claveDer, valorDer)
+	require.True(t, abb.Pertenece(clavePadre))
+	require.EqualValues(t, valorPadre, abb.Borrar(clavePadre))
+	require.False(t, abb.Pertenece(clavePadre))
+	require.True(t, abb.Pertenece(claveIzq))
+	require.True(t, abb.Pertenece(claveDer))
+	require.EqualValues(t, 2, abb.Cantidad())
+}
+
+func TestABBBorradoCasosBorde(t *testing.T) {
+	t.Log("Prueba los casos borde de borrado: nodo sin hijos, con un hijo y con dos hijos")
+
+	abb := TDADiccionario.CrearABB[int, string](cmpInt)
+	t.Run("Borrar nodo sin hijos", func(t *testing.T) {
+		borradoNodoSinHijos(t, abb, 10, "diez")
+	})
+
+	t.Run("Borrar nodo con un hijo", func(t *testing.T) {
+		borradoNodoConUnHijo(t, abb, 10, 5, "diez", "cinco")
+	})
+
+	t.Run("Borrar nodo con dos hijos", func(t *testing.T) {
+		borradoNodoConDosHijos(t, abb, 10, 5, 15, "diez", "cinco", "quince")
+	})
+}
+
 func TestAbbReutlizacionDeBorrados(t *testing.T) {
 	t.Log("Prueba de caja blanca: revisa, para el caso que fuere un HashCerrado, que no haya problema " +
 		"reinsertando un elemento borrado")
@@ -233,8 +281,11 @@ func TestABBConClavesStructs(t *testing.T) {
 		p5: "juan",
 	}
 
-	for _, p := range claves {
+	for i, p := range claves {
 		abb.Guardar(p, valores[p])
+		require.Equal(t, i+1, abb.Cantidad(), "La cantidad de elementos no es la esperada tras agregar %s", p.nombre)
+		require.True(t, abb.Pertenece(p), "El ABB debería contener a %s tras agregarlo", p.nombre)
+		require.Equal(t, valores[p], abb.Obtener(p), "Valor incorrecto para %s tras agregarlo", p.nombre)
 	}
 
 	require.Equal(t, 5, abb.Cantidad(), "La cantidad de elementos no es la esperada")
@@ -340,34 +391,97 @@ func buscarAbb(clave string, claves []string) int {
 	return -1
 }
 
+func TestABBIteradorInternoSinCorte(t *testing.T) {
+	t.Log("Prueba el iterador interno sin corte, recorriendo todos los elementos")
+	abb := TDADiccionario.CrearABB[int, string](cmpInt)
+	claves := []int{5, 3, 8, 1, 4, 7, 9}
+	for _, c := range claves {
+		abb.Guardar(c, fmt.Sprintf("valor%d", c))
+	}
+
+	var resultado []int
+	abb.Iterar(func(clave int, _ string) bool {
+		resultado = append(resultado, clave)
+		return true
+	})
+
+	require.Equal(t, []int{1, 3, 4, 5, 7, 8, 9}, resultado, "El recorrido completo no es InOrder")
+}
+
+func TestABBIteradorInternoConCorte(t *testing.T) {
+	t.Log("Prueba el iterador interno con corte, deteniéndose después de recorrer algunos elementos")
+	abb := TDADiccionario.CrearABB[int, string](cmpInt)
+	claves := []int{5, 3, 8, 1, 4, 7, 9}
+	for _, c := range claves {
+		abb.Guardar(c, fmt.Sprintf("valor%d", c))
+	}
+
+	var resultado []int
+	abb.Iterar(func(clave int, _ string) bool {
+		resultado = append(resultado, clave)
+		return len(resultado) < 3
+	})
+
+	require.Equal(t, []int{1, 3, 4}, resultado, "El recorrido no cortó en el momento esperado")
+}
+
+func TestABBIteradorInternoConRango(t *testing.T) {
+	t.Log("Prueba el iterador interno con rango desde y hasta, recorriendo solo los elementos dentro del rango")
+	abb := TDADiccionario.CrearABB[int, string](cmpInt)
+	claves := []int{5, 3, 8, 1, 4, 7, 9}
+	for _, c := range claves {
+		abb.Guardar(c, fmt.Sprintf("valor%d", c))
+	}
+
+	desde := 3
+	hasta := 7
+	var resultado []int
+	abb.IterarRango(&desde, &hasta, func(clave int, _ string) bool {
+		resultado = append(resultado, clave)
+		return true
+	})
+
+	require.Equal(t, []int{3, 4, 5, 7}, resultado, "El recorrido con rango no devolvió los elementos esperados")
+}
+
+func TestABBIteradorInternoConDesdeHastaConCorte(t *testing.T) {
+	t.Log("Prueba el iterador interno con rango desde y hasta, deteniéndose después de recorrer algunos elementos")
+	abb := TDADiccionario.CrearABB[int, string](cmpInt)
+	claves := []int{5, 3, 8, 1, 4, 7, 9}
+	for _, c := range claves {
+		abb.Guardar(c, fmt.Sprintf("valor%d", c))
+	}
+
+	desde := 3
+	hasta := 7
+	var resultado []int
+	abb.IterarRango(&desde, &hasta, func(clave int, _ string) bool {
+		resultado = append(resultado, clave)
+		return len(resultado) < 2
+	})
+
+	require.Equal(t, []int{3, 4}, resultado, "El recorrido con rango y corte no devolvió los elementos esperados")
+}
+
 func TestAbbIteradorInternoClaves(t *testing.T) {
-	t.Log("Valida que todas las claves sean recorridas (y una única vez) con el iterador interno")
+	t.Log("Valida que todas las claves sean recorridas en el orden correcto con el iterador interno")
 	clave1 := "Gato"
 	clave2 := "Perro"
 	clave3 := "Vaca"
 	claves := []string{clave1, clave2, clave3}
 	abb := TDADiccionario.CrearABB[string, *int](cmpString)
+
 	abb.Guardar(claves[0], nil)
 	abb.Guardar(claves[1], nil)
 	abb.Guardar(claves[2], nil)
 
-	cs := []string{"", "", ""}
-	cantidad := 0
-	cantPtr := &cantidad
-
-	abb.Iterar(func(clave string, dato *int) bool {
-		cs[cantidad] = clave
-		*cantPtr = *cantPtr + 1
+	var resultado []string
+	abb.Iterar(func(clave string, _ *int) bool {
+		resultado = append(resultado, clave)
 		return true
 	})
 
-	require.EqualValues(t, 3, cantidad)
-	require.NotEqualValues(t, -1, buscarAbb(cs[0], claves))
-	require.NotEqualValues(t, -1, buscarAbb(cs[1], claves))
-	require.NotEqualValues(t, -1, buscarAbb(cs[2], claves))
-	require.NotEqualValues(t, cs[0], cs[1])
-	require.NotEqualValues(t, cs[0], cs[2])
-	require.NotEqualValues(t, cs[2], cs[1])
+	require.Equal(t, []string{"Gato", "Perro", "Vaca"}, resultado, "El recorrido no respeta el orden esperado")
 }
 
 func TestABBIteradorInternoValores(t *testing.T) {
@@ -396,7 +510,8 @@ func TestABBIteradorInternoValores(t *testing.T) {
 }
 
 func TestAbbIteradorInternoValoresConBorrados(t *testing.T) {
-	t.Log("Valida que los datos sean recorridas correctamente (y una única vez) con el iterador interno, sin recorrer datos borrados")
+	t.Log("Valida que los datos sean recorridos correctamente (y una única vez) con el iterador interno, sin recorrer datos borrados, y con corte")
+
 	clave0 := "Elefante"
 	clave1 := "Gato"
 	clave2 := "Perro"
@@ -414,31 +529,46 @@ func TestAbbIteradorInternoValoresConBorrados(t *testing.T) {
 
 	abb.Borrar(clave0)
 
+	//Prueba sin corte
 	factorial := 1
 	ptrFactorial := &factorial
 	abb.Iterar(func(_ string, dato int) bool {
 		*ptrFactorial *= dato
 		return true
 	})
+	require.EqualValues(t, 720, factorial, "El cálculo del factorial sin corte es incorrecto")
 
-	require.EqualValues(t, 720, factorial)
+	// Prueba con corte
+	factorialConCorte := 1
+	ptrFactorialConCorte := &factorialConCorte
+	abb.Iterar(func(_ string, dato int) bool {
+		*ptrFactorialConCorte *= dato
+		return dato != 3
+	})
+	require.EqualValues(t, 12, factorialConCorte, "El cálculo del factorial con corte es incorrecto")
 }
 
 func ejecutarPruebaVolumenABB(b *testing.B, n int) {
-	abb := TDADiccionario.CrearABB[string, int](cmpString)
+	abb := TDADiccionario.CrearABB[int, int](cmpInt)
 
-	claves := make([]string, n)
+	// Generar claves y valores
+	claves := make([]int, n)
 	valores := make([]int, n)
-
 	for i := 0; i < n; i++ {
+		claves[i] = i
 		valores[i] = i
-		claves[i] = fmt.Sprintf("%08d", i)
+	}
+
+	// Insertar en orden aleatorio
+	for i := 0; i < n; i++ {
+		indice := rand.Intn(len(claves)-i) + i
+		claves[i], claves[indice] = claves[indice], claves[i]
 		abb.Guardar(claves[i], valores[i])
 	}
 
 	require.EqualValues(b, n, abb.Cantidad(), "La cantidad de elementos es incorrecta")
 
-	// Verifica que devuelva los valores correctos //
+	// Verifica que devuelva los valores correctos
 	ok := true
 	for i := 0; i < n; i++ {
 		ok = abb.Pertenece(claves[i])
@@ -818,4 +948,56 @@ func TestABBIterador(t *testing.T) {
 	require.False(t, iter.HaySiguiente(), "El iterador debería estar al final")
 	require.PanicsWithValue(t, "El iterador termino de iterar", func() { iter.VerActual() })
 	require.PanicsWithValue(t, "El iterador termino de iterar", func() { iter.Siguiente() })
+}
+
+func TestABBIteradorExternoConRangos(t *testing.T) {
+	t.Log("Prueba el iterador externo con rangos: desde, hasta, y combinaciones de ambos")
+
+	abb := TDADiccionario.CrearABB[int, string](cmpInt)
+	claves := []int{5, 3, 8, 1, 4, 7, 9}
+	for _, c := range claves {
+		abb.Guardar(c, fmt.Sprintf("valor%d", c))
+	}
+
+	// Caso sin desde ni hasta
+	iter := abb.Iterador()
+	var resultadoCompleto []int
+	for iter.HaySiguiente() {
+		clave, _ := iter.VerActual()
+		resultadoCompleto = append(resultadoCompleto, clave)
+		iter.Siguiente()
+	}
+	require.Equal(t, []int{1, 3, 4, 5, 7, 8, 9}, resultadoCompleto, "El recorrido completo no es InOrder")
+
+	// Caso con solo desde
+	desde := 4
+	iterDesde := abb.IteradorRango(&desde, nil)
+	var resultadoDesde []int
+	for iterDesde.HaySiguiente() {
+		clave, _ := iterDesde.VerActual()
+		resultadoDesde = append(resultadoDesde, clave)
+		iterDesde.Siguiente()
+	}
+	require.Equal(t, []int{4, 5, 7, 8, 9}, resultadoDesde, "El recorrido con solo desde no es correcto")
+
+	// Caso con solo hasta
+	hasta := 7
+	iterHasta := abb.IteradorRango(nil, &hasta)
+	var resultadoHasta []int
+	for iterHasta.HaySiguiente() {
+		clave, _ := iterHasta.VerActual()
+		resultadoHasta = append(resultadoHasta, clave)
+		iterHasta.Siguiente()
+	}
+	require.Equal(t, []int{1, 3, 4, 5, 7}, resultadoHasta, "El recorrido con solo hasta no es correcto")
+
+	// Caso con desde y hasta
+	iterRango := abb.IteradorRango(&desde, &hasta)
+	var resultadoRango []int
+	for iterRango.HaySiguiente() {
+		clave, _ := iterRango.VerActual()
+		resultadoRango = append(resultadoRango, clave)
+		iterRango.Siguiente()
+	}
+	require.Equal(t, []int{4, 5, 7}, resultadoRango, "El recorrido con desde y hasta no es correcto")
 }
