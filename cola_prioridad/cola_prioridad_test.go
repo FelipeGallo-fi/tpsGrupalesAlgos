@@ -1,7 +1,9 @@
 package cola_prioridad_test
 
 import (
-	TDAHeap "tdas/tpsGrupalesAlgos/heap"
+	"fmt"
+	"math/rand"
+	TDAHeap "tdas/cola_prioridad"
 	"testing"
 
 	"github.com/stretchr/testify/require"
@@ -9,11 +11,12 @@ import (
 
 const (
 	_DESCENDENTE = 0
-	_VOLUMEN     = 100000
 	_ASCENDENTE  = 1
+	_VOLUMEN     = 100000
 )
 
 var _VECTOR_DE_PRIORIDADES_ = []int{1, 2, 3, 3, 7, 23, 34, 60, 100, 2300, 22, 99, 34, 69, 34, 4}
+var _TAMS_VOLUMEN_ORDENADO = []int{10, 100, 10000, 1000000}
 
 func cmpMaxHeap(a, b int) int {
 	return a - b
@@ -95,6 +98,64 @@ func TestHeapVacio(t *testing.T) {
 
 }
 
+func TestBorrado(t *testing.T) {
+	h := TDAHeap.CrearHeap(cmpMaxHeap)
+
+	for i := 0; i < 23; i++ {
+		h.Encolar(i)
+	}
+
+	require.Equal(t, 22, h.VerMax(), "El maximo de mi heap tendria que ser 22")
+
+	for !h.EstaVacia() {
+		i := h.Cantidad() - 1
+
+		elemento := h.Desencolar()
+		require.Equal(t, i, elemento, "El elemento desencolado deberia ser igual que %d", i)
+	}
+
+	require.True(t, h.EstaVacia(), "El heap deberia estar vacio")
+
+	// pruebo tambien que una vez que se vacio por completo un heap puedo volver a usarlo
+
+	h.Encolar(13)
+	h.Encolar(1)
+	require.Equal(t, 13, h.VerMax(), "El elemento maximo deberia de ser 13")
+	h.Desencolar()
+	require.Equal(t, 1, h.VerMax(), "El elemento maximo deberia de ser 1")
+	h.Desencolar()
+	require.True(t, h.EstaVacia(), "El heap deberia estar vacio")
+
+}
+
+func BenchmarkElementosIguales(b *testing.B) {
+	h := TDAHeap.CrearHeap(cmpMaxHeap)
+
+	for i := 0; i < _VOLUMEN; i++ {
+		h.Encolar(112694)
+	}
+
+	for !h.EstaVacia() {
+		require.Equal(b, 112694, h.VerMax(), "El maximo deberia de ser 112694")
+		require.Equal(b, 112694, h.Desencolar(), "El elemento desencolado deberia de ser 112694")
+	}
+}
+
+func BenchmarkColaOrdenada(b *testing.B) {
+
+	for _, n := range _TAMS_VOLUMEN_ORDENADO {
+		b.Run(fmt.Sprintf("Prueba %d elementos", n), func(b *testing.B) {
+			for i := 0; i < b.N; i++ {
+				h := TDAHeap.CrearHeap(cmpMaxHeap)
+				for j := 0; j < n; j++ {
+					h.Encolar(j)
+				}
+			}
+		})
+	}
+}
+
+// Test de arrays
 func TestCrearHeapConArrayMax(t *testing.T) {
 
 	vectorMax := MergeSort(_DESCENDENTE, _VECTOR_DE_PRIORIDADES_)
@@ -227,4 +288,67 @@ func TestCompararOrdenamientos(t *testing.T) {
 		obtenidoHeapArr = append(obtenidoHeapArr, h2.Desencolar())
 	}
 	require.Equal(t, esperado, obtenidoHeapArr, "CrearHeapArr debería generar mismo orden que MergeSort descendente")
+}
+
+//tets heapSort
+
+func TestHeapSortConMaxHeap(t *testing.T) {
+
+	vectorCopia := append([]int(nil), _VECTOR_DE_PRIORIDADES_...)
+
+	esperado := MergeSort(_DESCENDENTE, _VECTOR_DE_PRIORIDADES_)
+
+	TDAHeap.HeapSort(vectorCopia, cmpMinHeap)
+
+	require.Equal(t, esperado, vectorCopia, "HeapSort debería ordenar el slice de mayor a menor")
+}
+
+func TestHeapSortConMinHeap(t *testing.T) {
+
+	vectorCopia := append([]int(nil), _VECTOR_DE_PRIORIDADES_...)
+
+	esperado := MergeSort(_ASCENDENTE, _VECTOR_DE_PRIORIDADES_)
+
+	TDAHeap.HeapSort(vectorCopia, cmpMaxHeap)
+
+	require.Equal(t, esperado, vectorCopia, "HeapSort debería ordenar el slice de menor a mayor")
+}
+
+func TestHeapSortOrdenadoAscendente(t *testing.T) {
+	slice := MergeSort(_ASCENDENTE, _VECTOR_DE_PRIORIDADES_)
+	esperado := append([]int(nil), slice...)
+	TDAHeap.HeapSort(slice, cmpMaxHeap)
+	require.Equal(t, esperado, slice, "HeapSort en min-heap tiene que mantener orden ascendente")
+}
+
+func TestHeapSortOrdenadoDescendente(t *testing.T) {
+	slice := MergeSort(_DESCENDENTE, _VECTOR_DE_PRIORIDADES_)
+	esperado := append([]int(nil), slice...)
+	TDAHeap.HeapSort(slice, cmpMinHeap)
+	require.Equal(t, esperado, slice, "HeapSort en max-heap tiene que mantener orden descendente")
+}
+
+func TestHeapSortSliceVacio(t *testing.T) {
+	slice := []int{}
+	TDAHeap.HeapSort(slice, cmpMaxHeap)
+	require.Empty(t, slice, "HeapSort vacio no tendira que modificar nada ")
+}
+
+func TestHeapSortUnElemento(t *testing.T) {
+	slice := []int{112694}
+	TDAHeap.HeapSort(slice, cmpMaxHeap)
+	require.Equal(t, []int{112694}, slice, "HeapSort en slice de un elemento no tendira que  cambiarlo")
+}
+
+func TestHeapSortVolumen(t *testing.T) {
+	n := 100000
+	slice := make([]int, n)
+	for i := 0; i < n; i++ {
+		slice[i] = rand.Intn(1000000)
+	}
+	esperado := append([]int(nil), slice...)
+	esperado = MergeSort(_ASCENDENTE, esperado)
+
+	TDAHeap.HeapSort(slice, cmpMaxHeap)
+	require.Equal(t, esperado, slice, "HeapSort ordena correctamente un volumen grande aleatoriamente ")
 }
