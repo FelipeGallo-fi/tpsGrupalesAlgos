@@ -83,8 +83,11 @@ func TestBencharkEncolarYDesencolar(t *testing.T) {
 
 	require.Equal(t, _VOLUMEN-1, h.VerMax(), "El maximo deberia ser 99999")
 
-	for i := 0; i < _VOLUMEN; i++ {
-		require.Equal(t, _VOLUMEN-1-i, h.Desencolar(), "Desencolar deberia devolver los valores de mayor a menor")
+	for i := _VOLUMEN; i > 0; i-- {
+		require.Equal(t, i, h.Cantidad(), "La cantidad  debeia ser %d", i)
+		require.Equal(t, i-1, h.VerMax(), "El maximo debeia ser %d", i-1)
+		require.False(t, h.EstaVacia(), "No deberia estar vacia ")
+		require.Equal(t, i-1, h.Desencolar(), "Desencolar deberia devolver los valores de mayor a menor")
 	}
 
 	require.True(t, h.EstaVacia(), "El heap deberia de estar vacio al desencolar todo")
