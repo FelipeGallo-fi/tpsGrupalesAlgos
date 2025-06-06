@@ -75,6 +75,10 @@ func TestBencharkEncolarYDesencolar(t *testing.T) {
 
 	for i := 0; i < _VOLUMEN; i++ {
 		h.Encolar(i)
+		require.Equal(t, i, h.VerMax(), "El maximo debeia ser %d", i)
+		require.Equal(t, i+1, h.Cantidad(), "La cantidad  debeia ser %d", i+1)
+		require.False(t, h.EstaVacia(), "No deberia estar vacia ")
+
 	}
 
 	require.Equal(t, _VOLUMEN-1, h.VerMax(), "El maximo deberia ser 99999")
@@ -121,9 +125,11 @@ func TestBorrado(t *testing.T) {
 	h.Encolar(13)
 	h.Encolar(1)
 	require.Equal(t, 13, h.VerMax(), "El elemento maximo deberia de ser 13")
-	h.Desencolar()
+	require.Equal(t, 13, h.Desencolar(), "El elemento desencolado  deberia de ser 13")
+
 	require.Equal(t, 1, h.VerMax(), "El elemento maximo deberia de ser 1")
-	h.Desencolar()
+	require.Equal(t, 1, h.Desencolar(), "El elemento desencolado  deberia de ser 1")
+
 	require.True(t, h.EstaVacia(), "El heap deberia estar vacio")
 
 }

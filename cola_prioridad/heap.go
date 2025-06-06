@@ -8,16 +8,22 @@ type heap[T any] struct {
 
 const (
 	_FACTOR_REDIMENSION_AGRANDAR = 2
-	_PILA_VACIA                  = 0
-	_MINIMA_CAPACIDAD            = 10
+	_FACTOR_REDIMENSION_ACHICAR  = 2
+	_FACTOR_REDIMENSION_TOPE     = 4
+
+	_MINIMA_CAPACIDAD = 10
 )
 
-func CrearHeap[T any](funcion_cmp func(T, T) int) ColaPrioridad[T] {
+func crearHeapConCapacidad[T any](capacidad int, cantidad int, cmp func(T, T) int) *heap[T] {
 	return &heap[T]{
-		datos:       make([]T, _MINIMA_CAPACIDAD),
-		cantidad:    0,
-		funcion_cmp: funcion_cmp,
+		datos:       make([]T, capacidad),
+		cantidad:    cantidad,
+		funcion_cmp: cmp,
 	}
+}
+
+func CrearHeap[T any](funcion_cmp func(T, T) int) ColaPrioridad[T] {
+	return crearHeapConCapacidad(_MINIMA_CAPACIDAD, 0, funcion_cmp)
 }
 
 func CrearHeapArr[T any](arreglo []T, funcion_cmp func(T, T) int) ColaPrioridad[T] {
@@ -25,11 +31,7 @@ func CrearHeapArr[T any](arreglo []T, funcion_cmp func(T, T) int) ColaPrioridad[
 	if capacidad < _MINIMA_CAPACIDAD {
 		capacidad = _MINIMA_CAPACIDAD
 	}
-	h := &heap[T]{
-		datos:       make([]T, capacidad),
-		cantidad:    len(arreglo),
-		funcion_cmp: funcion_cmp,
-	}
+	h := crearHeapConCapacidad(capacidad, len(arreglo), funcion_cmp)
 	copy(h.datos, arreglo)
 	heapify(h.datos, h.cantidad, funcion_cmp)
 	return h
@@ -98,9 +100,6 @@ func (h *heap[T]) EstaVacia() bool {
 func (h *heap[T]) Encolar(elem T) {
 	if h.cantidad == len(h.datos) {
 		nuevaCap := len(h.datos) * _FACTOR_REDIMENSION_AGRANDAR
-		if nuevaCap == 0 {
-			nuevaCap = _MINIMA_CAPACIDAD
-		}
 		h.redimensionar(nuevaCap)
 	}
 	h.datos[h.cantidad] = elem
@@ -126,8 +125,8 @@ func (h *heap[T]) Desencolar() T {
 		h.downHeap(0)
 	}
 
-	if h.cantidad > 0 && h.cantidad <= len(h.datos)/4 && len(h.datos)/2 >= _MINIMA_CAPACIDAD {
-		h.redimensionar(len(h.datos) / 2)
+	if h.cantidad <= len(h.datos)/_FACTOR_REDIMENSION_TOPE && len(h.datos)/_FACTOR_REDIMENSION_ACHICAR >= _MINIMA_CAPACIDAD {
+		h.redimensionar(len(h.datos) / _FACTOR_REDIMENSION_ACHICAR)
 	}
 
 	return max
