@@ -1,3 +1,6 @@
+// Implementación del TDA Heap (cola de prioridad) genérico.
+// Se usa como base para la lógica de prioridad_vuelos.
+
 package cola_prioridad
 
 type heap[T any] struct {
