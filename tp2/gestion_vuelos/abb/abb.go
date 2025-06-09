@@ -5,7 +5,7 @@
 package diccionario
 
 import (
-	TDAPila "tdas/pila"
+	TDAPila "tp2/gestion_vuelos/abb/pila"
 )
 
 type aBB[K comparable, V any] struct {
