@@ -1,20 +1,20 @@
 panic: La clave no pertenece al diccionario
 
 goroutine 1 [running]:
-tp2/tdas/hash.(*diccionarioHash[...]).Borrar(0x507720, {0xc00001c740, 0x508dc0?})
+tp2/tdas/hash.(*diccionarioHash[...]).Borrar(0x507800, {0xc00001c740, 0x508ea0?})
 	/home/fedee/Algoritmos_2/tpsGrupalesAlgos/entrega_tp2/tp2/tdas/hash/hash.go:130 +0x16a
 tp2/comandos.Borrar.func1(0xc000112c60)
 	/home/fedee/Algoritmos_2/tpsGrupalesAlgos/entrega_tp2/tp2/comandos/borrar.go:26 +0x3e
-tp2/comandos.EliminarVuelosEnRango.func1({0x506600?, 0xc0000341c0?, 0x0?}, {0xc000012a10, 0x2, 0xc00000e0f0?})
-	/home/fedee/Algoritmos_2/tpsGrupalesAlgos/entrega_tp2/tp2/comandos/abb_fechas_vuelos.go:44 +0x5e
-tp2/tdas/abb.iterarRangoRec[...](0xc000034180, 0xc00000e0a8, 0xc00000e0c0, 0x4e6b18, 0xc00000e0f0)
+tp2/comandos.EliminarVuelosEnRango.func1({0x5066e0?, 0xc0000341c0?, 0x0?}, {0xc000012a10, 0x2, 0xc00000e0f0?})
+	/home/fedee/Algoritmos_2/tpsGrupalesAlgos/entrega_tp2/tp2/comandos/abb_fechas_vuelos.go:41 +0x5e
+tp2/tdas/abb.iterarRangoRec[...](0xc000034180, 0xc00000e0a8, 0xc00000e0c0, 0x4e6b40, 0xc00000e0f0)
 	/home/fedee/Algoritmos_2/tpsGrupalesAlgos/entrega_tp2/tp2/tdas/abb/abb.go:205 +0x11e
-tp2/tdas/abb.iterarRangoRec[...](0xc000034100, 0xc00000e0a8, 0xc00000e0c0, 0x4e6b18, 0xc00000e0f0)
+tp2/tdas/abb.iterarRangoRec[...](0xc000034100, 0xc00000e0a8, 0xc00000e0c0, 0x4e6b40, 0xc00000e0f0)
 	/home/fedee/Algoritmos_2/tpsGrupalesAlgos/entrega_tp2/tp2/tdas/abb/abb.go:196 +0x1bd
 tp2/tdas/abb.(*aBB[...]).IterarRango(...)
 	/home/fedee/Algoritmos_2/tpsGrupalesAlgos/entrega_tp2/tp2/tdas/abb/abb.go:212
-tp2/comandos.EliminarVuelosEnRango({0x506e58, 0xc00000e018}, {0x0, 0xed2a335a0, 0x0}, {0x0, 0xed2cbe12b, 0x0}, 0x4e6b10)
-	/home/fedee/Algoritmos_2/tpsGrupalesAlgos/entrega_tp2/tp2/comandos/abb_fechas_vuelos.go:42 +0x162
+tp2/comandos.EliminarVuelosEnRango({0x506f38, 0xc00000e018}, {0x0, 0xed2a335a0, 0x0}, {0x0, 0xed2cbe12b, 0x0}, 0x4e6b38)
+	/home/fedee/Algoritmos_2/tpsGrupalesAlgos/entrega_tp2/tp2/comandos/abb_fechas_vuelos.go:39 +0x162
 tp2/comandos.Borrar({0xc000104e78, 0x2e?, 0xc0000181b0?})
 	/home/fedee/Algoritmos_2/tpsGrupalesAlgos/entrega_tp2/tp2/comandos/borrar.go:24 +0x15c
 tp2/comandos.EjecutarComando({0xc0000181b0?, 0xc0001100c9?})

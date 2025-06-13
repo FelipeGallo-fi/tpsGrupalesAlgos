@@ -9,24 +9,32 @@ import (
 )
 
 func SiguienteVuelo(parametros []string) {
+	if len(parametros) < 3 {
+        fmt.Println(_ErrorSiguienteVuelo)
+        return
+    }
+	
 	origen := parametros[0]
 	destino := parametros[1]
 	fechaStr := parametros[2]
 
 	fecha, err := time.Parse(_Fecha, fechaStr)
 	if err != nil {
-		fmt.Fprintln(os.Stderr, _ErrorSiguienteVuelo)
+		fmt.Printf("No hay vuelo registrado desde %s hacia %s desde %s\n", origen, destino, fechaStr)
+        fmt.Println(_MensajeOK)
 		return
 	}
 
 	if !conexiones.Pertenece(origen) {
-		fmt.Fprintln(os.Stderr, _ErrorSiguienteVuelo)
+		fmt.Printf("No hay vuelo registrado desde %s hacia %s desde %s\n", origen, destino, fechaStr)
+        fmt.Println(_MensajeOK)
 		return
 	}
 
 	hashDestino := conexiones.Obtener(origen)
 	if !hashDestino.Pertenece(destino) {
-		fmt.Fprintln(os.Stderr, _ErrorSiguienteVuelo)
+		fmt.Printf("No hay vuelo registrado desde %s hacia %s desde %s\n", origen, destino, fechaStr)
+        fmt.Println(_MensajeOK)
 		return
 	}
 
@@ -38,12 +46,24 @@ func SiguienteVuelo(parametros []string) {
 
 	for i < len(vuelos) {
 		if vuelos[i].Cancelado != _Cancelado {
-			fmt.Printf("%s - %s\n", vuelos[i].Codigo, vuelos[i].Fecha.Format(_Fecha))
+			v := vuelos[i]
+  
+	 fmt.Printf("%s %s %s %s %s %s %d %d %d %d\n",
+		v.Codigo,
+		v.Aerolinea,
+		origen,
+		destino,
+		v.Prioridad,
+		v.Fecha.Format(_Fecha),
+		v.Retraso,
+		 v.TiempoVuelo,
+		0)
 			fmt.Println(_MensajeOK)
 			return
 		}
 		i++
 	}
 
+	fmt.Printf("No hay vuelo registrado desde %s hacia %s desde %s\n", origen, destino, fechaStr)
 	fmt.Fprintln(os.Stderr, _ErrorSiguienteVuelo)
 }

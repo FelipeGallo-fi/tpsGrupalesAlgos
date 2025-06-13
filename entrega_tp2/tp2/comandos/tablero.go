@@ -36,7 +36,7 @@ func VerTablero(parametros []string) {
 	}
 
 	for _, v := range vuelos {
-		fmt.Printf("yoo  %s - %s\n", v.Fecha.Format(_Fecha), v.Codigo)
+		fmt.Printf("%s - %s\n", v.Fecha.Format(_Fecha), v.Codigo)
 	}
 
 	fmt.Println(_MensajeOK)
