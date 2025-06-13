@@ -25,6 +25,7 @@ func AgregarArchivo(nombreArchivo string) error {
 			return err
 		}
 
+
 		guardarVueloPorCodigo(vuelo)
 		insertarVueloPorFecha(vuelo)
 		insertarVueloEnConexiones(vuelo)
@@ -39,11 +40,15 @@ func AgregarArchivo(nombreArchivo string) error {
 	return nil
 }
 
+
 func guardarVueloPorCodigo(vuelo *TDAvuelo.Vuelo) {
 	vuelosPorCodigo.Guardar(vuelo.Codigo, vuelo)
 }
 
 func insertarVueloPorFecha(vuelo *TDAvuelo.Vuelo) {
+	
+	
+	
 	var lista []*TDAvuelo.Vuelo
 
 	if vuelosPorFecha.Pertenece(vuelo.Fecha) {

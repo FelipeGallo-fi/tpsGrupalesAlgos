@@ -191,7 +191,7 @@ func iterarRangoRec[K comparable, V any](n *nodoAb[K, V], desde, hasta *K, compa
 	if n == nil {
 		return true
 	}
-
+	
 	if desde != nil && comparar(n.clave, *desde) < 0 {
 		return iterarRangoRec(n.der, desde, hasta, comparar, visitar)
 	}

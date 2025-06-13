@@ -14,11 +14,15 @@ type vueloPrioritario struct {
 }
 
 func cmpVuelos(a, b vueloPrioritario) int {
+
 	if a.vuelo.Prioridad != b.vuelo.Prioridad {
-		return b.vuelo.Prioridad - a.vuelo.Prioridad
+		return      a.vuelo.Prioridad - b.vuelo.Prioridad
 	}
 	return strings.Compare(a.vuelo.Codigo, b.vuelo.Codigo)
 }
+
+
+
 
 func PrioridadVuelos(parametros []string) {
 	kStr := parametros[0]
@@ -36,9 +40,10 @@ func PrioridadVuelos(parametros []string) {
 		}
 		return true
 	})
-
+	
 	for i := 0; i < k && !h.EstaVacia(); i++ {
 		v := h.Desencolar().vuelo
+		
 		fmt.Printf("%d - %s\n", v.Prioridad, v.Codigo)
 	}
 

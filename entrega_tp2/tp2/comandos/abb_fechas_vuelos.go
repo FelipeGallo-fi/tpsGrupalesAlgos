@@ -10,6 +10,9 @@ import (
 )
 
 func VuelosEnRango(abb abb.DiccionarioOrdenado[time.Time, []*TDAvuelo.Vuelo], desde, hasta time.Time, esDescendente bool) []*TDAvuelo.Vuelo {
+	desde = desde.UTC()
+    hasta = hasta.UTC()
+	
 	var resultado []*TDAvuelo.Vuelo
 	abb.IterarRango(&desde, &hasta, func(_ time.Time, lista []*TDAvuelo.Vuelo) bool {
 		resultado = append(resultado, lista...)
