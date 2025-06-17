@@ -1,61 +1,33 @@
 panic: La clave no pertenece al diccionario
 
 goroutine 1 [running]:
-tp2/tdas/hash.(*diccionarioHash[...]).Borrar(0x507800, {0xc000939540, 0x508ea0?})
+tp2/tdas/hash.(*diccionarioHash[...]).Borrar(0x507960, {0xc00099a2c0, 0x509000?})
 	/home/fedee/Algoritmos_2/tpsGrupalesAlgos/entrega_tp2/tp2/tdas/hash/hash.go:130 +0x16a
-tp2/comandos.Borrar.func1(0xc00095ee10)
-	/home/fedee/Algoritmos_2/tpsGrupalesAlgos/entrega_tp2/tp2/comandos/borrar.go:26 +0x3e
-tp2/comandos.EliminarVuelosEnRango.func1({0x0?, 0xedbe87f08?, 0x0?}, {0xc000a10b00, 0x1, 0x0?})
-	/home/fedee/Algoritmos_2/tpsGrupalesAlgos/entrega_tp2/tp2/comandos/abb_fechas_vuelos.go:41 +0x5e
-tp2/tdas/abb.iterarRangoRec[...](0xc00091ba00, 0xc00000e0d8, 0xc00000e0f0, 0x4e6b40, 0xc00000e120)
+tp2/comandos.Borrar.func1(0xc00099e630)
+	/home/fedee/Algoritmos_2/tpsGrupalesAlgos/entrega_tp2/tp2/comandos/borrar.go:29 +0x3e
+tp2/comandos.EliminarVuelosEnRango.func1({0x506840?, 0xc000030980?, 0x0?}, {0xc000e69008, 0x400, 0xc00000e0d8?})
+	/home/fedee/Algoritmos_2/tpsGrupalesAlgos/entrega_tp2/tp2/comandos/abb_fechas_vuelos.go:45 +0x5e
+tp2/tdas/abb.iterarRangoRec[...](0xc000030880, 0xc00000e090, 0xc00000e0a8, 0x4e6b60, 0xc00000e0d8)
 	/home/fedee/Algoritmos_2/tpsGrupalesAlgos/entrega_tp2/tp2/tdas/abb/abb.go:205 +0x11e
-tp2/tdas/abb.iterarRangoRec[...](0xc0002f30c0, 0xc00000e0d8, 0xc00000e0f0, 0x4e6b40, 0xc00000e120)
-	/home/fedee/Algoritmos_2/tpsGrupalesAlgos/entrega_tp2/tp2/tdas/abb/abb.go:202 +0xf2
-tp2/tdas/abb.iterarRangoRec[...](0xc0002a0200, 0xc00000e0d8, 0xc00000e0f0, 0x4e6b40, 0xc00000e120)
-	/home/fedee/Algoritmos_2/tpsGrupalesAlgos/entrega_tp2/tp2/tdas/abb/abb.go:202 +0xf2
-tp2/tdas/abb.iterarRangoRec[...](0xc0004a2b80, 0xc00000e0d8, 0xc00000e0f0, 0x4e6b40, 0xc00000e120)
-	/home/fedee/Algoritmos_2/tpsGrupalesAlgos/entrega_tp2/tp2/tdas/abb/abb.go:208 +0x14e
-tp2/tdas/abb.iterarRangoRec[...](0xc0003edc00, 0xc00000e0d8, 0xc00000e0f0, 0x4e6b40, 0xc00000e120)
-	/home/fedee/Algoritmos_2/tpsGrupalesAlgos/entrega_tp2/tp2/tdas/abb/abb.go:202 +0xf2
-tp2/tdas/abb.iterarRangoRec[...](0xc0001b8b40, 0xc00000e0d8, 0xc00000e0f0, 0x4e6b40, 0xc00000e120)
-	/home/fedee/Algoritmos_2/tpsGrupalesAlgos/entrega_tp2/tp2/tdas/abb/abb.go:202 +0xf2
-tp2/tdas/abb.iterarRangoRec[...](0xc000161840, 0xc00000e0d8, 0xc00000e0f0, 0x4e6b40, 0xc00000e120)
-	/home/fedee/Algoritmos_2/tpsGrupalesAlgos/entrega_tp2/tp2/tdas/abb/abb.go:202 +0xf2
-tp2/tdas/abb.iterarRangoRec[...](0xc000161740, 0xc00000e0d8, 0xc00000e0f0, 0x4e6b40, 0xc00000e120)
-	/home/fedee/Algoritmos_2/tpsGrupalesAlgos/entrega_tp2/tp2/tdas/abb/abb.go:202 +0xf2
-tp2/tdas/abb.iterarRangoRec[...](0xc00013cb40, 0xc00000e0d8, 0xc00000e0f0, 0x4e6b40, 0xc00000e120)
-	/home/fedee/Algoritmos_2/tpsGrupalesAlgos/entrega_tp2/tp2/tdas/abb/abb.go:202 +0xf2
-tp2/tdas/abb.iterarRangoRec[...](0xc000035bc0, 0xc00000e0d8, 0xc00000e0f0, 0x4e6b40, 0xc00000e120)
-	/home/fedee/Algoritmos_2/tpsGrupalesAlgos/entrega_tp2/tp2/tdas/abb/abb.go:208 +0x14e
-tp2/tdas/abb.iterarRangoRec[...](0xc000035800, 0xc00000e0d8, 0xc00000e0f0, 0x4e6b40, 0xc00000e120)
+tp2/tdas/abb.iterarRangoRec[...](0xc000030280, 0xc00000e090, 0xc00000e0a8, 0x4e6b60, 0xc00000e0d8)
 	/home/fedee/Algoritmos_2/tpsGrupalesAlgos/entrega_tp2/tp2/tdas/abb/abb.go:196 +0x1bd
-tp2/tdas/abb.iterarRangoRec[...](0xc000035000, 0xc00000e0d8, 0xc00000e0f0, 0x4e6b40, 0xc00000e120)
+tp2/tdas/abb.iterarRangoRec[...](0xc000030200, 0xc00000e090, 0xc00000e0a8, 0x4e6b60, 0xc00000e0d8)
 	/home/fedee/Algoritmos_2/tpsGrupalesAlgos/entrega_tp2/tp2/tdas/abb/abb.go:196 +0x1bd
-tp2/tdas/abb.iterarRangoRec[...](0xc000034fc0, 0xc00000e0d8, 0xc00000e0f0, 0x4e6b40, 0xc00000e120)
+tp2/tdas/abb.iterarRangoRec[...](0xc0000301c0, 0xc00000e090, 0xc00000e0a8, 0x4e6b60, 0xc00000e0d8)
 	/home/fedee/Algoritmos_2/tpsGrupalesAlgos/entrega_tp2/tp2/tdas/abb/abb.go:202 +0xf2
-tp2/tdas/abb.iterarRangoRec[...](0xc000034d00, 0xc00000e0d8, 0xc00000e0f0, 0x4e6b40, 0xc00000e120)
+tp2/tdas/abb.iterarRangoRec[...](0xc000030180, 0xc00000e090, 0xc00000e0a8, 0x4e6b60, 0xc00000e0d8)
 	/home/fedee/Algoritmos_2/tpsGrupalesAlgos/entrega_tp2/tp2/tdas/abb/abb.go:202 +0xf2
-tp2/tdas/abb.iterarRangoRec[...](0xc000034b00, 0xc00000e0d8, 0xc00000e0f0, 0x4e6b40, 0xc00000e120)
-	/home/fedee/Algoritmos_2/tpsGrupalesAlgos/entrega_tp2/tp2/tdas/abb/abb.go:202 +0xf2
-tp2/tdas/abb.iterarRangoRec[...](0xc0000342c0, 0xc00000e0d8, 0xc00000e0f0, 0x4e6b40, 0xc00000e120)
-	/home/fedee/Algoritmos_2/tpsGrupalesAlgos/entrega_tp2/tp2/tdas/abb/abb.go:196 +0x1bd
-tp2/tdas/abb.iterarRangoRec[...](0xc000034240, 0xc00000e0d8, 0xc00000e0f0, 0x4e6b40, 0xc00000e120)
-	/home/fedee/Algoritmos_2/tpsGrupalesAlgos/entrega_tp2/tp2/tdas/abb/abb.go:196 +0x1bd
-tp2/tdas/abb.iterarRangoRec[...](0xc000034200, 0xc00000e0d8, 0xc00000e0f0, 0x4e6b40, 0xc00000e120)
-	/home/fedee/Algoritmos_2/tpsGrupalesAlgos/entrega_tp2/tp2/tdas/abb/abb.go:202 +0xf2
-tp2/tdas/abb.iterarRangoRec[...](0xc000034180, 0xc00000e0d8, 0xc00000e0f0, 0x4e6b40, 0xc00000e120)
-	/home/fedee/Algoritmos_2/tpsGrupalesAlgos/entrega_tp2/tp2/tdas/abb/abb.go:202 +0xf2
-tp2/tdas/abb.iterarRangoRec[...](0xc000034140, 0xc00000e0d8, 0xc00000e0f0, 0x4e6b40, 0xc00000e120)
+tp2/tdas/abb.iterarRangoRec[...](0xc000030140, 0xc00000e090, 0xc00000e0a8, 0x4e6b60, 0xc00000e0d8)
 	/home/fedee/Algoritmos_2/tpsGrupalesAlgos/entrega_tp2/tp2/tdas/abb/abb.go:199 +0x18d
-tp2/tdas/abb.iterarRangoRec[...](0xc000034100, 0xc00000e0d8, 0xc00000e0f0, 0x4e6b40, 0xc00000e120)
+tp2/tdas/abb.iterarRangoRec[...](0xc000030100, 0xc00000e090, 0xc00000e0a8, 0x4e6b60, 0xc00000e0d8)
 	/home/fedee/Algoritmos_2/tpsGrupalesAlgos/entrega_tp2/tp2/tdas/abb/abb.go:202 +0xf2
 tp2/tdas/abb.(*aBB[...]).IterarRango(...)
 	/home/fedee/Algoritmos_2/tpsGrupalesAlgos/entrega_tp2/tp2/tdas/abb/abb.go:212
-tp2/comandos.EliminarVuelosEnRango({0x506f38, 0xc00000e018}, {0x0, 0xedbe869b4, 0x0}, {0x0, 0xedbf700f0, 0x0}, 0x4e6b38)
-	/home/fedee/Algoritmos_2/tpsGrupalesAlgos/entrega_tp2/tp2/comandos/abb_fechas_vuelos.go:39 +0x162
-tp2/comandos.Borrar({0xc000ca3e78, 0x2e?, 0xc0000181b0?})
-	/home/fedee/Algoritmos_2/tpsGrupalesAlgos/entrega_tp2/tp2/comandos/borrar.go:24 +0x15c
-tp2/comandos.EjecutarComando({0xc0000181b0?, 0xc000118070?})
+tp2/comandos.EliminarVuelosEnRango({0x507098, 0xc00000e018}, {0x0, 0xedbe78f80, 0x0}, {0x0, 0xedbf61000, 0x0}, 0x4e6b58)
+	/home/fedee/Algoritmos_2/tpsGrupalesAlgos/entrega_tp2/tp2/comandos/abb_fechas_vuelos.go:43 +0x162
+tp2/comandos.Borrar({0xc00010ce78, 0x2e?, 0xc0000181b0?})
+	/home/fedee/Algoritmos_2/tpsGrupalesAlgos/entrega_tp2/tp2/comandos/borrar.go:27 +0x1cc
+tp2/comandos.EjecutarComando({0xc0000181b0?, 0xc00011a070?})
 	/home/fedee/Algoritmos_2/tpsGrupalesAlgos/entrega_tp2/tp2/comandos/gestor_comandos.go:100 +0xae
 main.main()
 	/home/fedee/Algoritmos_2/tpsGrupalesAlgos/entrega_tp2/tp2/main.go:15 +0x7d

@@ -18,7 +18,7 @@ func cmpVuelos(a, b vueloPrioritario) int {
 	if a.vuelo.Prioridad != b.vuelo.Prioridad {
 		return      a.vuelo.Prioridad - b.vuelo.Prioridad
 	}
-	return strings.Compare(a.vuelo.Codigo, b.vuelo.Codigo)
+	return strings.Compare(b.vuelo.Codigo,a.vuelo.Codigo)
 }
 
 

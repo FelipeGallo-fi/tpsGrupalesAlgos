@@ -4,6 +4,7 @@ import (
 	"bufio"
 	"fmt"
 	"os"
+	"time"
 	"tp2/TDAvuelo"
 	hash "tp2/tdas/hash"
 )
@@ -46,19 +47,19 @@ func guardarVueloPorCodigo(vuelo *TDAvuelo.Vuelo) {
 }
 
 func insertarVueloPorFecha(vuelo *TDAvuelo.Vuelo) {
-	
-	
+	clave := vuelo.Fecha.Truncate(24 * time.Hour)
+
 	
 	var lista []*TDAvuelo.Vuelo
 
-	if vuelosPorFecha.Pertenece(vuelo.Fecha) {
-		lista = vuelosPorFecha.Obtener(vuelo.Fecha)
+	if vuelosPorFecha.Pertenece(clave) {
+		lista = vuelosPorFecha.Obtener(clave)
 	} else {
 		lista = []*TDAvuelo.Vuelo{}
 	}
 
-	lista = append(lista, vuelo)
-	vuelosPorFecha.Guardar(vuelo.Fecha, lista)
+	lista = insertarOrdenadoPorFecha(lista, vuelo)
+	vuelosPorFecha.Guardar(clave, lista)
 }
 
 func insertarVueloEnConexiones(vuelo *TDAvuelo.Vuelo) {
@@ -84,7 +85,7 @@ func insertarVueloEnConexiones(vuelo *TDAvuelo.Vuelo) {
 
 func insertarOrdenadoPorFecha(lista []*TDAvuelo.Vuelo, vuelo *TDAvuelo.Vuelo) []*TDAvuelo.Vuelo {
 	for i, v := range lista {
-		if vuelo.Fecha.Before(v.Fecha) {
+		if vuelo.Fecha.Before(v.Fecha) || (vuelo.Fecha.Equal(v.Fecha) && vuelo.Codigo < v.Codigo) {
 			return append(lista[:i], append([]*TDAvuelo.Vuelo{vuelo}, lista[i:]...)...)
 		}
 	}

@@ -10,12 +10,15 @@ import (
 )
 
 func VuelosEnRango(abb abb.DiccionarioOrdenado[time.Time, []*TDAvuelo.Vuelo], desde, hasta time.Time, esDescendente bool) []*TDAvuelo.Vuelo {
+	desde = desde.Truncate(24 * time.Hour)
+	hasta = hasta.Truncate(24 * time.Hour)
 	var resultado []*TDAvuelo.Vuelo
 	abb.IterarRango(&desde, &hasta, func(_ time.Time, lista []*TDAvuelo.Vuelo) bool {
 		resultado = append(resultado, lista...)
 		return true
 	})
 
+	
 	sort.SliceStable(resultado, func(i, j int) bool {
 		if resultado[i].Fecha.Equal(resultado[j].Fecha) {
 			return resultado[i].Codigo < resultado[j].Codigo
@@ -25,6 +28,7 @@ func VuelosEnRango(abb abb.DiccionarioOrdenado[time.Time, []*TDAvuelo.Vuelo], de
 		}
 		return resultado[i].Fecha.Before(resultado[j].Fecha)
 	})
+
 
 	return resultado
 }
