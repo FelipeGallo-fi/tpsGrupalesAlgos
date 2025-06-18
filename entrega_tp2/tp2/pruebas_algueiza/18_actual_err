@@ -1,13 +1,13 @@
 panic: La clave no pertenece al diccionario
 
 goroutine 1 [running]:
-tp2/tdas/abb.(*aBB[...]).Borrar(0x507e60, {0xc00000e048, 0x4e6b60?, 0x0?})
+tp2/tdas/abb.(*aBB[...]).Borrar(0x507f00, {0xc0000b4030, 0x4e6b80?, 0x0?})
 	/home/fedee/Algoritmos_2/tpsGrupalesAlgos/entrega_tp2/tp2/tdas/abb/abb.go:66 +0x28e
-tp2/comandos.EliminarVuelosEnRango({0x507098, 0xc00000e018}, {0x0, 0xed2521800, 0x0}, {0x0, 0xed31bcd80, 0x0}, 0x4e6b58)
-	/home/fedee/Algoritmos_2/tpsGrupalesAlgos/entrega_tp2/tp2/comandos/abb_fechas_vuelos.go:52 +0x195
-tp2/comandos.Borrar({0xc00010ce78, 0x2e?, 0xc000018180?})
-	/home/fedee/Algoritmos_2/tpsGrupalesAlgos/entrega_tp2/tp2/comandos/borrar.go:27 +0x1cc
-tp2/comandos.EjecutarComando({0xc000018180?, 0xc00011a02d?})
+tp2/comandos.EliminarVuelosEnRango({0x507138, 0xc0000b4000}, {0x0, 0xed2521800, 0x0}, {0x0, 0xed31bcd80, 0x0}, 0x4e6b78)
+	/home/fedee/Algoritmos_2/tpsGrupalesAlgos/entrega_tp2/tp2/comandos/abb_fechas_vuelos.go:59 +0x195
+tp2/comandos.Borrar({0xc0000a0e78, 0x2e?, 0xc0000ba030?})
+	/home/fedee/Algoritmos_2/tpsGrupalesAlgos/entrega_tp2/tp2/comandos/borrar.go:27 +0x15c
+tp2/comandos.EjecutarComando({0xc0000ba030?, 0xc0000b802d?})
 	/home/fedee/Algoritmos_2/tpsGrupalesAlgos/entrega_tp2/tp2/comandos/gestor_comandos.go:100 +0xae
 main.main()
 	/home/fedee/Algoritmos_2/tpsGrupalesAlgos/entrega_tp2/tp2/main.go:15 +0x7d

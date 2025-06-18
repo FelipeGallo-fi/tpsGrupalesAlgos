@@ -192,10 +192,10 @@ func iterarRangoRec[K comparable, V any](n *nodoAb[K, V], desde, hasta *K, compa
 		return true
 	}
 	
-	if desde != nil && comparar(n.clave, *desde) < 0 {
+	if desde != nil && comparar(n.clave, *desde) <= 0 {
 		return iterarRangoRec(n.der, desde, hasta, comparar, visitar)
 	}
-	if hasta != nil && comparar(n.clave, *hasta) > 0 {
+	if hasta != nil && comparar(n.clave, *hasta) >= 0 {
 		return iterarRangoRec(n.izq, desde, hasta, comparar, visitar)
 	}
 
@@ -205,9 +205,13 @@ func iterarRangoRec[K comparable, V any](n *nodoAb[K, V], desde, hasta *K, compa
 	if !visitar(n.clave, n.dato) {
 		return false
 	}
+	
+
 	return iterarRangoRec(n.der, desde, hasta, comparar, visitar)
 }
 
 func (a *aBB[K, V]) IterarRango(desde *K, hasta *K, visitar func(clave K, dato V) bool) {
+	
+
 	iterarRangoRec(a.raiz, desde, hasta, a.comparar, visitar)
 }

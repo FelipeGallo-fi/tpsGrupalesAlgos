@@ -120,14 +120,15 @@ func (d *diccionarioHash[K, V]) Obtener(clave K) V {
 }
 
 func (d *diccionarioHash[K, V]) Borrar(clave K) V {
+	var cero V
 	if d.capacidad == 0 {
-		panic("La clave no pertenece al diccionario")
+		return cero
 	}
 
 	posicion, esta := d.buscarPos(clave)
 
 	if !esta {
-		panic("La clave no pertenece al diccionario")
+		return cero
 	}
 
 	valor := d.tabla[posicion].valor

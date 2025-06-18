@@ -3,6 +3,7 @@
 package comandos
 
 import (
+	"fmt"
 	"sort"
 	"time"
 	TDAvuelo "tp2/TDAvuelo"
@@ -10,8 +11,7 @@ import (
 )
 
 func VuelosEnRango(abb abb.DiccionarioOrdenado[time.Time, []*TDAvuelo.Vuelo], desde, hasta time.Time, esDescendente bool) []*TDAvuelo.Vuelo {
-	desde = desde.Truncate(24 * time.Hour)
-	hasta = hasta.Truncate(24 * time.Hour)
+
 	var resultado []*TDAvuelo.Vuelo
 	abb.IterarRango(&desde, &hasta, func(_ time.Time, lista []*TDAvuelo.Vuelo) bool {
 		resultado = append(resultado, lista...)
@@ -38,17 +38,25 @@ func EliminarVuelosEnRango(
 	desde, hasta time.Time,
 	procesarVuelo func(v *TDAvuelo.Vuelo),
 ) {
+
+	
+
 	var clavesABorrar []time.Time
 
 	vuelosPorFecha.IterarRango(&desde, &hasta, func(fecha time.Time, lista []*TDAvuelo.Vuelo) bool {
-		for _, v := range lista {
+		for _, v := range (lista ){
+			fmt.Println("fechas ", fecha)
 			procesarVuelo(v)
 		}
+		
 		clavesABorrar = append(clavesABorrar, fecha)
+		fmt.Println("Claves a borrar : ",clavesABorrar)
+
 		return true
 	})
 
 	for _, fecha := range clavesABorrar {
 		vuelosPorFecha.Borrar(fecha)
+		//fmt.Print("borrado :%d\n",borrado)
 	}
 }
