@@ -14,15 +14,11 @@ type vueloPrioritario struct {
 }
 
 func cmpVuelos(a, b vueloPrioritario) int {
-
 	if a.vuelo.Prioridad != b.vuelo.Prioridad {
-		return      a.vuelo.Prioridad - b.vuelo.Prioridad
+		return a.vuelo.Prioridad - b.vuelo.Prioridad
 	}
-	return strings.Compare(b.vuelo.Codigo,a.vuelo.Codigo)
+	return strings.Compare(b.vuelo.Codigo, a.vuelo.Codigo)
 }
-
-
-
 
 func PrioridadVuelos(parametros []string) {
 	kStr := parametros[0]
@@ -35,15 +31,14 @@ func PrioridadVuelos(parametros []string) {
 	h := heap.CrearHeap(cmpVuelos)
 
 	vuelosPorCodigo.Iterar(func(_ string, v *TDAvuelo.Vuelo) bool {
-		if v.Cancelado != _Cancelado {
+		if v.Cancelado == 0 {
 			h.Encolar(vueloPrioritario{vuelo: v})
 		}
 		return true
 	})
-	
+
 	for i := 0; i < k && !h.EstaVacia(); i++ {
 		v := h.Desencolar().vuelo
-		
 		fmt.Printf("%d - %s\n", v.Prioridad, v.Codigo)
 	}
 

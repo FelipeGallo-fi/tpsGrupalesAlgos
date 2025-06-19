@@ -65,12 +65,10 @@ func EliminarVuelo(
 		destinos.Borrar(vuelo.Destino)
 	}
 
-
 	if destinos.Cantidad() > 0 {
 		conexiones.Guardar(vuelo.Origen, destinos)
-	}else {
+	} else {
 		conexiones.Borrar(vuelo.Origen)
 	}
-	
-	
+
 }

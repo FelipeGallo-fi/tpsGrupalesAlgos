@@ -11,7 +11,7 @@ VALGRIND_RETRY=""
 echo "Ejecución de pruebas unitarias de $BASENAME:"
 echo ""
 
-for t in *.test; do
+for t in $(printf "%02d.test\n" $(seq 1 16)); do
     b=${t%.test}
     ret=0
     echo "$b $(< $t)"

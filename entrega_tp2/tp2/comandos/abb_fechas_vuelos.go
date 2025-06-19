@@ -3,7 +3,6 @@
 package comandos
 
 import (
-	"fmt"
 	"sort"
 	"time"
 	TDAvuelo "tp2/TDAvuelo"
@@ -18,7 +17,6 @@ func VuelosEnRango(abb abb.DiccionarioOrdenado[time.Time, []*TDAvuelo.Vuelo], de
 		return true
 	})
 
-	
 	sort.SliceStable(resultado, func(i, j int) bool {
 		if resultado[i].Fecha.Equal(resultado[j].Fecha) {
 			return resultado[i].Codigo < resultado[j].Codigo
@@ -29,34 +27,27 @@ func VuelosEnRango(abb abb.DiccionarioOrdenado[time.Time, []*TDAvuelo.Vuelo], de
 		return resultado[i].Fecha.Before(resultado[j].Fecha)
 	})
 
-
 	return resultado
 }
 
-func EliminarVuelosEnRango(
-	vuelosPorFecha abb.DiccionarioOrdenado[time.Time, []*TDAvuelo.Vuelo],
-	desde, hasta time.Time,
-	procesarVuelo func(v *TDAvuelo.Vuelo),
-) {
-
-	
+func EliminarVuelosEnRango(vuelosPorFecha abb.DiccionarioOrdenado[time.Time, []*TDAvuelo.Vuelo], desde, hasta time.Time, procesarVuelo func(v *TDAvuelo.Vuelo)) {
 
 	var clavesABorrar []time.Time
 
 	vuelosPorFecha.IterarRango(&desde, &hasta, func(fecha time.Time, lista []*TDAvuelo.Vuelo) bool {
-		for _, v := range (lista ){
-			fmt.Println("fechas ", fecha)
+		for _, v := range lista {
 			procesarVuelo(v)
 		}
-		
+
 		clavesABorrar = append(clavesABorrar, fecha)
-		fmt.Println("Claves a borrar : ",clavesABorrar)
 
 		return true
 	})
 
 	for _, fecha := range clavesABorrar {
-		vuelosPorFecha.Borrar(fecha)
-		//fmt.Print("borrado :%d\n",borrado)
+		if vuelosPorFecha.Pertenece(fecha) {
+			vuelosPorFecha.Borrar(fecha)
+		}
 	}
+
 }

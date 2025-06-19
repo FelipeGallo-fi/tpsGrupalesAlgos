@@ -37,7 +37,7 @@ func ParsearVuelo(linea string) (*Vuelo, error) {
 		return nil, err
 	}
 	fecha, err := time.Parse(_Fecha, partes[6])
-	
+
 	if err != nil {
 		return nil, err
 	}

@@ -13,7 +13,6 @@ func infoVuelo(codigo string) error {
 	}
 
 	vuelo := vuelosPorCodigo.Obtener(codigo)
-	//fmt.Printf("Codigo %d\n",vuelo.Codigo)
 	ImprimirVuelo(vuelo)
 	fmt.Println(_MensajeOK)
 	return nil

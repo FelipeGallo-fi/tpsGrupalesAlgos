@@ -22,10 +22,6 @@ func VerTablero(parametros []string) {
 	hasta, err2 := time.Parse(_Fecha, hastaStr)
 	k, errK := strconv.Atoi(kStr)
 
-	desde = desde.Truncate(24 * time.Hour) //PRUEBA
-	hasta = hasta.Truncate(24 * time.Hour)	//PRUEBA
-
-
 	if err1 != nil || err2 != nil || errK != nil || k <= 0 || hasta.Before(desde) {
 		fmt.Fprintln(os.Stderr, _ErrorVerTablero)
 		return
@@ -33,7 +29,6 @@ func VerTablero(parametros []string) {
 
 	modoDesc := (modo == _ModoDesc)
 	vuelos := VuelosEnRango(vuelosPorFecha, desde, hasta, modoDesc)
-
 
 	if len(vuelos) > k {
 		vuelos = vuelos[:k]

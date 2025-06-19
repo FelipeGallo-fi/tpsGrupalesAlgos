@@ -187,31 +187,41 @@ func (it *iteradorABB[K, V]) Siguiente() {
 	it.apilarNodos(nodo.der)
 }
 
-func iterarRangoRec[K comparable, V any](n *nodoAb[K, V], desde, hasta *K, comparar func(K, K) int, visitar func(clave K, dato V) bool) bool {
+func iterarRangoRec[K comparable, V any](
+	n *nodoAb[K, V],
+	desde, hasta *K,
+	comparar func(K, K) int,
+	visitar func(K, V) bool,
+) bool {
 	if n == nil {
 		return true
 	}
-	
-	if desde != nil && comparar(n.clave, *desde) <= 0 {
-		return iterarRangoRec(n.der, desde, hasta, comparar, visitar)
-	}
-	if hasta != nil && comparar(n.clave, *hasta) >= 0 {
-		return iterarRangoRec(n.izq, desde, hasta, comparar, visitar)
+
+	// Recorroer izquierda si puede haber algo menor o igual a hasta
+	if hasta == nil || comparar(n.clave, *hasta) >= -1 {
+		if !iterarRangoRec(n.izq, desde, hasta, comparar, visitar) {
+			return false
+		}
 	}
 
-	if !iterarRangoRec(n.izq, desde, hasta, comparar, visitar) {
-		return false
+	// Visitar el nodo si está dentro del rango incluyendo los bordes
+	if (desde == nil || comparar(n.clave, *desde) >= 0) &&
+		(hasta == nil || comparar(n.clave, *hasta) <= 0) {
+		if !visitar(n.clave, n.dato) {
+			return false
+		}
 	}
-	if !visitar(n.clave, n.dato) {
-		return false
-	}
-	
 
-	return iterarRangoRec(n.der, desde, hasta, comparar, visitar)
+	// Recorrer derecha si puede haber algo mayor o igual a desde
+	if desde == nil || comparar(n.clave, *desde) <= 1 {
+		if !iterarRangoRec(n.der, desde, hasta, comparar, visitar) {
+			return false
+		}
+	}
+
+	return true
 }
 
 func (a *aBB[K, V]) IterarRango(desde *K, hasta *K, visitar func(clave K, dato V) bool) {
-	
-
 	iterarRangoRec(a.raiz, desde, hasta, a.comparar, visitar)
 }
