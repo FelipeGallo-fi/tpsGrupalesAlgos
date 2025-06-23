@@ -72,7 +72,7 @@ func ParsearVuelo(linea string) (*Vuelo, error) {
 }
 
 func (v *Vuelo) String() string {
-	return fmt.Sprintf("%s %s %s %s %s %d %s %02d %d %d",
+	return fmt.Sprintf("%s %s %s %s %s %d %s %d %d %d",
 		v.Codigo,
 		v.Aerolinea,
 		v.Origen,

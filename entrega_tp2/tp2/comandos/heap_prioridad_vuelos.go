@@ -31,9 +31,7 @@ func PrioridadVuelos(parametros []string) {
 	h := heap.CrearHeap(cmpVuelos)
 
 	vuelosPorCodigo.Iterar(func(_ string, v *TDAvuelo.Vuelo) bool {
-		if v.Cancelado == 0 {
-			h.Encolar(vueloPrioritario{vuelo: v})
-		}
+		h.Encolar(vueloPrioritario{vuelo: v})
 		return true
 	})
 

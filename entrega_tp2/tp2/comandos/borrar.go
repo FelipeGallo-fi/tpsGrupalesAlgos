@@ -13,19 +13,29 @@ func Borrar(parametros []string) {
 		return
 	}
 
-	desde, err1 := time.Parse(_Fecha, parametros[0])
-	hasta, err2 := time.Parse(_Fecha, parametros[1])
+	desdeStr := parametros[0]
+	hastaStr := parametros[1]
+
+	desde, err1 := time.Parse(_Fecha, desdeStr)
+	hasta, err2 := time.Parse(_Fecha, hastaStr)
 
 	if err1 != nil || err2 != nil || hasta.Before(desde) {
 		fmt.Fprintln(os.Stderr, _ErrorBorrar)
 		return
 	}
 
-	EliminarVuelosEnRango(vuelosPorFecha, desde, hasta, func(v *TDAvuelo.Vuelo) {
-		ImprimirVuelo(v)
+	visto := make(map[string]bool)
+
+	procesar := func(v *TDAvuelo.Vuelo) {
+		if !visto[v.Codigo] {
+			fmt.Println(v.String())
+			visto[v.Codigo] = true
+		}
 		vuelosPorCodigo.Borrar(v.Codigo)
-		EliminarVuelo(conexiones, v)
-	})
+		eliminarVueloDeConexiones(v)
+	}
+
+	EliminarVuelosEnRango(vuelosPorFecha, desde, hasta, procesar)
 
 	fmt.Println(_MensajeOK)
 }
