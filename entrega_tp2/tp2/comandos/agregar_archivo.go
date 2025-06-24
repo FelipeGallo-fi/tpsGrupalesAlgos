@@ -4,6 +4,7 @@ import (
 	"bufio"
 	"fmt"
 	"os"
+	"time"
 	"tp2/TDAvuelo"
 	hash "tp2/tdas/hash"
 )
@@ -24,11 +25,9 @@ func AgregarArchivo(nombreArchivo string) error {
 			fmt.Fprintln(os.Stderr, _ErrorAgregarArchivo)
 			return err
 		}
-
 		if vuelosPorCodigo.Pertenece(vuelo.Codigo) {
-			viejo := vuelosPorCodigo.Obtener(vuelo.Codigo)
-			eliminarVueloDeFecha(viejo)
-			eliminarVueloDeConexiones(viejo)
+			eliminarVueloDeFechaPorCodigo(vuelo.Codigo)
+			eliminarVueloDeConexionesPorCodigo(vuelo.Codigo)
 			vuelosPorCodigo.Borrar(vuelo.Codigo)
 		}
 
@@ -50,34 +49,45 @@ func AgregarArchivo(nombreArchivo string) error {
 }
 
 func insertarVueloPorFecha(vuelo *TDAvuelo.Vuelo) {
+	fecha := vuelo.Fecha
 	listaFiltrada := []*TDAvuelo.Vuelo{}
-	if vuelosPorFecha.Pertenece(vuelo.Fecha) {
-		original := vuelosPorFecha.Obtener(vuelo.Fecha)
+
+	if vuelosPorFecha.Pertenece(fecha) {
+		original := vuelosPorFecha.Obtener(fecha)
 		for _, v := range original {
 			if v.Codigo != vuelo.Codigo {
 				listaFiltrada = append(listaFiltrada, v)
 			}
 		}
 	}
+
 	listaFiltrada = insertarOrdenadoPorFecha(listaFiltrada, vuelo)
-	vuelosPorFecha.Guardar(vuelo.Fecha, listaFiltrada)
+	vuelosPorFecha.Guardar(fecha, listaFiltrada)
 }
 
 func insertarVueloEnConexiones(vuelo *TDAvuelo.Vuelo) {
+	origen := vuelo.Origen
+	destino := vuelo.Destino
+
 	var destinos hash.Diccionario[string, []*TDAvuelo.Vuelo]
-	if conexiones.Pertenece(vuelo.Origen) {
-		destinos = conexiones.Obtener(vuelo.Origen)
+	if conexiones.Pertenece(origen) {
+		destinos = conexiones.Obtener(origen)
 	} else {
 		destinos = hash.CrearHash[string, []*TDAvuelo.Vuelo]()
-		conexiones.Guardar(vuelo.Origen, destinos)
+		conexiones.Guardar(origen, destinos)
 	}
 
-	var lista []*TDAvuelo.Vuelo
-	if destinos.Pertenece(vuelo.Destino) {
-		lista = destinos.Obtener(vuelo.Destino)
+	lista := []*TDAvuelo.Vuelo{}
+	if destinos.Pertenece(destino) {
+		for _, v := range destinos.Obtener(destino) {
+			if v.Codigo != vuelo.Codigo {
+				lista = append(lista, v)
+			}
+		}
 	}
+
 	lista = insertarOrdenadoPorFecha(lista, vuelo)
-	destinos.Guardar(vuelo.Destino, lista)
+	destinos.Guardar(destino, lista)
 }
 
 func insertarOrdenadoPorFecha(lista []*TDAvuelo.Vuelo, vuelo *TDAvuelo.Vuelo) []*TDAvuelo.Vuelo {
@@ -89,45 +99,137 @@ func insertarOrdenadoPorFecha(lista []*TDAvuelo.Vuelo, vuelo *TDAvuelo.Vuelo) []
 	return append(lista, vuelo)
 }
 
-func eliminarVueloDeFecha(vuelo *TDAvuelo.Vuelo) {
-	if !vuelosPorFecha.Pertenece(vuelo.Fecha) {
-		return
+func eliminarVueloDeFechaPorCodigo(codigo string) {
+	iter := vuelosPorFecha.Iterador()
+	var fechasAEliminar []time.Time
+
+	for iter.HaySiguiente() {
+		fecha, lista := iter.VerActual()
+		nueva := []*TDAvuelo.Vuelo{}
+		eliminado := false
+
+		for _, v := range lista {
+			if v.Codigo != codigo {
+				nueva = append(nueva, v)
+			} else {
+				eliminado = true
+			}
+		}
+
+		if eliminado {
+			if len(nueva) == 0 {
+				fechasAEliminar = append(fechasAEliminar, fecha)
+			} else {
+				vuelosPorFecha.Guardar(fecha, nueva)
+			}
+		}
+
+		iter.Siguiente()
 	}
-	lista := vuelosPorFecha.Obtener(vuelo.Fecha)
-	nueva := []*TDAvuelo.Vuelo{}
-	for _, v := range lista {
-		if v.Codigo != vuelo.Codigo {
-			nueva = append(nueva, v)
+
+	for _, f := range fechasAEliminar {
+		if vuelosPorFecha.Pertenece(f) {
+			vuelosPorFecha.Borrar(f)
 		}
 	}
-	if len(nueva) == 0 {
-		vuelosPorFecha.Borrar(vuelo.Fecha)
-	} else {
-		vuelosPorFecha.Guardar(vuelo.Fecha, nueva)
+}
+
+func eliminarVueloDeConexionesPorCodigo(codigo string) {
+	iterOrigen := conexiones.Iterador()
+	var origenesAEliminar []string
+
+	for iterOrigen.HaySiguiente() {
+		origen, destinos := iterOrigen.VerActual()
+		iterDestino := destinos.Iterador()
+		var destinosAEliminar []string
+
+		for iterDestino.HaySiguiente() {
+			destino, lista := iterDestino.VerActual()
+			nueva := []*TDAvuelo.Vuelo{}
+			eliminado := false
+
+			for _, v := range lista {
+				if v.Codigo != codigo {
+					nueva = append(nueva, v)
+				} else {
+					eliminado = true
+				}
+			}
+
+			if eliminado {
+				if len(nueva) == 0 {
+					destinosAEliminar = append(destinosAEliminar, destino)
+				} else {
+					destinos.Guardar(destino, nueva)
+				}
+			}
+
+			iterDestino.Siguiente()
+		}
+
+		for _, d := range destinosAEliminar {
+			destinos.Borrar(d)
+		}
+
+		if destinos.Cantidad() == 0 {
+			origenesAEliminar = append(origenesAEliminar, origen)
+		}
+
+		iterOrigen.Siguiente()
+	}
+
+	for _, o := range origenesAEliminar {
+		conexiones.Borrar(o)
 	}
 }
 
 func eliminarVueloDeConexiones(vuelo *TDAvuelo.Vuelo) {
-	if !conexiones.Pertenece(vuelo.Origen) {
-		return
-	}
-	destinos := conexiones.Obtener(vuelo.Origen)
-	if !destinos.Pertenece(vuelo.Destino) {
-		return
-	}
-	lista := destinos.Obtener(vuelo.Destino)
-	nueva := []*TDAvuelo.Vuelo{}
-	for _, v := range lista {
-		if v.Codigo != vuelo.Codigo {
-			nueva = append(nueva, v)
+	iterOrigen := conexiones.Iterador()
+	var origenesAEliminar []string
+
+	for iterOrigen.HaySiguiente() {
+		origen, destinos := iterOrigen.VerActual()
+		iterDestino := destinos.Iterador()
+		var destinosAEliminar []string
+
+		for iterDestino.HaySiguiente() {
+			destino, lista := iterDestino.VerActual()
+			nueva := []*TDAvuelo.Vuelo{}
+			eliminado := false
+
+			for _, v := range lista {
+				if v.Codigo != vuelo.Codigo {
+					nueva = append(nueva, v)
+				} else {
+					eliminado = true
+				}
+			}
+
+			if eliminado {
+				if len(nueva) == 0 {
+					destinosAEliminar = append(destinosAEliminar, destino)
+				} else {
+					destinos.Guardar(destino, nueva)
+				}
+			}
+
+			iterDestino.Siguiente()
 		}
-	}
-	if len(nueva) > 0 {
-		destinos.Guardar(vuelo.Destino, nueva)
-	} else {
-		destinos.Borrar(vuelo.Destino)
+
+		for _, d := range destinosAEliminar {
+			destinos.Borrar(d)
+		}
+
 		if destinos.Cantidad() == 0 {
-			conexiones.Borrar(vuelo.Origen)
+			origenesAEliminar = append(origenesAEliminar, origen)
+		}
+
+		iterOrigen.Siguiente()
+	}
+
+	for _, o := range origenesAEliminar {
+		if conexiones.Pertenece(o) {
+			conexiones.Borrar(o)
 		}
 	}
 }

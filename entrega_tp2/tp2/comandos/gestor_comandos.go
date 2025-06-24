@@ -86,11 +86,11 @@ func EjecutarComando(linea string) {
 		PrioridadVuelos([]string{campos[1]})
 
 	case "siguiente_vuelo":
-		if len(campos) != 3 {
+		if len(campos) != 4 {
 			fmt.Fprintln(os.Stderr, _ErrorSiguienteVuelo)
 			return
 		}
-		SiguienteVuelo([]string{campos[1], campos[2]})
+		SiguienteVuelo(campos[1:4])
 
 	case "borrar":
 		if len(campos) != 3 {

@@ -29,8 +29,15 @@ func VerTablero(parametros []string) {
 
 	modoDesc := (modo == _ModoDesc)
 	vuelos := VuelosEnRango(vuelosPorFecha, desde, hasta, modoDesc, k)
+	vistos := make(map[string]bool)
 
 	for _, v := range vuelos {
+		clave := v.Codigo + "_" + v.Fecha.Format(time.RFC3339)
+		if vistos[clave] {
+			continue
+		}
+		vistos[clave] = true
+
 		fmt.Printf("%s - %s\n", v.Fecha.Format(_Fecha), v.Codigo)
 	}
 

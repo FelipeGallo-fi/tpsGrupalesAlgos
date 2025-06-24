@@ -2,14 +2,13 @@ package comandos
 
 import (
 	"fmt"
-	"os"
 	"slices"
 	"time"
 	TDAvuelo "tp2/TDAvuelo"
 )
 
 func SiguienteVuelo(parametros []string) {
-	if len(parametros) < 3 {
+	if len(parametros) != 3 {
 		fmt.Println(_ErrorSiguienteVuelo)
 		return
 	}
@@ -44,8 +43,14 @@ func SiguienteVuelo(parametros []string) {
 		return !v.Fecha.Before(fecha)
 	})
 
+	if i == -1 {
+		fmt.Printf("No hay vuelo registrado desde %s hacia %s desde %s\n", origen, destino, fechaStr)
+		fmt.Println(_MensajeOK)
+		return
+	}
+
 	for i < len(vuelos) {
-		if vuelos[i].Cancelado != _Cancelado {
+		if vuelos[i].Cancelado == 0 {
 			v := vuelos[i]
 			fmt.Println(v.String())
 			fmt.Println(_MensajeOK)
@@ -55,5 +60,6 @@ func SiguienteVuelo(parametros []string) {
 	}
 
 	fmt.Printf("No hay vuelo registrado desde %s hacia %s desde %s\n", origen, destino, fechaStr)
-	fmt.Fprintln(os.Stderr, _ErrorSiguienteVuelo)
+	fmt.Println(_MensajeOK)
+
 }
