@@ -24,6 +24,8 @@ func SiguienteVuelo(parametros []string) {
 		return
 	}
 
+	fecha = TDAvuelo.NormalizarFecha(fecha)
+
 	if !conexiones.Pertenece(origen) {
 		fmt.Printf("No hay vuelo registrado desde %s hacia %s desde %s\n", origen, destino, fechaStr)
 		fmt.Println(_MensajeOK)

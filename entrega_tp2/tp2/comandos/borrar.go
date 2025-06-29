@@ -23,16 +23,17 @@ func Borrar(parametros []string) {
 		fmt.Fprintln(os.Stderr, _ErrorBorrar)
 		return
 	}
-
 	visto := make(map[string]bool)
 
-	procesar := func(v *TDAvuelo.Vuelo) {
+	procesar := func(v *TDAvuelo.Vuelo, fecha time.Time) {
 		if !visto[v.Codigo] {
 			fmt.Println(v.String())
 			visto[v.Codigo] = true
 		}
+
 		vuelosPorCodigo.Borrar(v.Codigo)
-		eliminarVueloDeConexiones(v)
+		eliminarVueloDeFechaPorCodigoEnFecha(v.Codigo, TDAvuelo.NormalizarFecha(fecha))
+		eliminarVueloDeConexionesPorCodigoDesde(v.Codigo, v.Origen, v.Destino)
 	}
 
 	EliminarVuelosEnRango(vuelosPorFecha, desde, hasta, procesar)

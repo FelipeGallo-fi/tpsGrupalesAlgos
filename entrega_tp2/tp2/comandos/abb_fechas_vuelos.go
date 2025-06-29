@@ -1,5 +1,3 @@
-// Lógica auxiliar para manejar los vuelos ordenados por fecha de despegue.
-// Permite insertar vuelos al ABB por fecha, recorrerlos por rango y usarlos en ver_tablero o borrar.
 package comandos
 
 import (
@@ -12,8 +10,15 @@ import (
 func VuelosEnRango(abb abb.DiccionarioOrdenado[time.Time, []*TDAvuelo.Vuelo], desde, hasta time.Time, esDescendente bool, k int) []*TDAvuelo.Vuelo {
 	var resultado []*TDAvuelo.Vuelo
 
+	desde = TDAvuelo.NormalizarFecha(desde)
+	hasta = TDAvuelo.NormalizarFecha(hasta)
+
 	abb.IterarRango(&desde, &hasta, func(_ time.Time, lista []*TDAvuelo.Vuelo) bool {
-		resultado = append(resultado, lista...)
+		for _, vuelo := range lista {
+			if vuelosPorCodigo.Pertenece(vuelo.Codigo) {
+				resultado = append(resultado, vuelo)
+			}
+		}
 		return true
 	})
 
@@ -39,30 +44,36 @@ func VuelosEnRango(abb abb.DiccionarioOrdenado[time.Time, []*TDAvuelo.Vuelo], de
 	return resultado
 }
 
-func EliminarVuelosEnRango(vuelosPorFecha abb.DiccionarioOrdenado[time.Time, []*TDAvuelo.Vuelo], desde, hasta time.Time, procesarVuelo func(v *TDAvuelo.Vuelo)) {
-	var vuelosAEliminar []*TDAvuelo.Vuelo
-	var clavesABorrar []time.Time
+func EliminarVuelosEnRango(vuelosPorFecha abb.DiccionarioOrdenado[time.Time, []*TDAvuelo.Vuelo], desde, hasta time.Time, procesarVuelo func(v *TDAvuelo.Vuelo, fecha time.Time)) {
+	var vuelosAEliminar []struct {
+		vuelo *TDAvuelo.Vuelo
+		fecha time.Time
+	}
+
+	desde = TDAvuelo.NormalizarFecha(desde)
+	hasta = TDAvuelo.NormalizarFecha(hasta)
 
 	vuelosPorFecha.IterarRango(&desde, &hasta, func(fecha time.Time, lista []*TDAvuelo.Vuelo) bool {
-		vuelosAEliminar = append(vuelosAEliminar, lista...)
-		clavesABorrar = append(clavesABorrar, fecha)
+
+		fecha = TDAvuelo.NormalizarFecha(fecha)
+
+		for _, v := range lista {
+			vuelosAEliminar = append(vuelosAEliminar, struct {
+				vuelo *TDAvuelo.Vuelo
+				fecha time.Time
+			}{v, fecha})
+		}
 		return true
 	})
 
 	sort.SliceStable(vuelosAEliminar, func(i, j int) bool {
-		if vuelosAEliminar[i].Fecha.Equal(vuelosAEliminar[j].Fecha) {
-			return vuelosAEliminar[i].Codigo < vuelosAEliminar[j].Codigo
+		if vuelosAEliminar[i].fecha.Equal(vuelosAEliminar[j].fecha) {
+			return vuelosAEliminar[i].vuelo.Codigo < vuelosAEliminar[j].vuelo.Codigo
 		}
-		return vuelosAEliminar[i].Fecha.Before(vuelosAEliminar[j].Fecha)
+		return vuelosAEliminar[i].fecha.Before(vuelosAEliminar[j].fecha)
 	})
 
-	for _, v := range vuelosAEliminar {
-		procesarVuelo(v)
-	}
-
-	for _, fecha := range clavesABorrar {
-		if vuelosPorFecha.Pertenece(fecha) {
-			vuelosPorFecha.Borrar(fecha)
-		}
+	for _, item := range vuelosAEliminar {
+		procesarVuelo(item.vuelo, item.fecha)
 	}
 }

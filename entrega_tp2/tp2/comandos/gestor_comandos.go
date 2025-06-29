@@ -42,6 +42,7 @@ func InicializarEstructuras() {
 		}
 		return 0
 	})
+
 	conexiones = hash.CrearHash[string, hash.Diccionario[string, []*TDAvuelo.Vuelo]]()
 }
 
@@ -50,7 +51,6 @@ func EjecutarComando(linea string) {
 	if len(campos) == 0 {
 		return
 	}
-
 	switch campos[0] {
 	case "agregar_archivo":
 		if len(campos) != 2 {

@@ -5,6 +5,7 @@ import (
 	"os"
 	"strconv"
 	"time"
+	TDAvuelo "tp2/TDAvuelo"
 )
 
 func VerTablero(parametros []string) {
@@ -26,6 +27,9 @@ func VerTablero(parametros []string) {
 		fmt.Fprintln(os.Stderr, _ErrorVerTablero)
 		return
 	}
+
+	desde = TDAvuelo.NormalizarFecha(desde)
+	hasta = TDAvuelo.NormalizarFecha(hasta)
 
 	modoDesc := (modo == _ModoDesc)
 	vuelos := VuelosEnRango(vuelosPorFecha, desde, hasta, modoDesc, k)

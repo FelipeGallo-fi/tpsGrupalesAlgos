@@ -123,7 +123,11 @@ func (a *aBB[K, V]) Guardar(clave K, dato V) {
 	}
 
 	nuevo := &nodoAb[K, V]{clave: clave, dato: dato}
-	a.reemplazarEnPadre(padre, nil, nuevo)
+	if a.comparar(clave, padre.clave) < 0 {
+		padre.izq = nuevo
+	} else {
+		padre.der = nuevo
+	}
 	a.cant++
 }
 

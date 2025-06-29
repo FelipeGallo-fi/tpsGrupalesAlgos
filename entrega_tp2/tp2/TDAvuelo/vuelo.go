@@ -26,6 +26,10 @@ type Vuelo struct {
 	Cancelado   int
 }
 
+func NormalizarFecha(fecha time.Time) time.Time {
+	return fecha.UTC().Truncate(time.Second)
+}
+
 func ParsearVuelo(linea string) (*Vuelo, error) {
 	partes := strings.Split(strings.TrimSpace(linea), ",")
 	if len(partes) != 10 {
@@ -37,6 +41,8 @@ func ParsearVuelo(linea string) (*Vuelo, error) {
 		return nil, err
 	}
 	fecha, err := time.Parse(_Fecha, partes[6])
+
+	fecha = NormalizarFecha(fecha)
 
 	if err != nil {
 		return nil, err
